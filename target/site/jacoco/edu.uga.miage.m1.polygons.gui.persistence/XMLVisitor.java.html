@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XMLVisitor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Persistene_g2_10</a> &gt; <a href="index.source.html" class="el_package">edu.uga.miage.m1.polygons.gui.persistence</a> &gt; <span class="el_source">XMLVisitor.java</span></div><h1>XMLVisitor.java</h1><pre class="source lang-java linenums">package edu.uga.miage.m1.polygons.gui.persistence;
+
+import java.util.logging.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import edu.uga.miage.m1.polygons.gui.shapes.SimpleShape;
+
+/**
+ * @author &lt;a href=&quot;mailto:christophe.saint-marcel@univ-grenoble-alpes.fr&quot;&gt;Christophe&lt;/a&gt;
+ */
+
+public class XMLVisitor implements Visitor {
+
+    private Document document;
+    private Element rootElement;
+
+<span class="fc" id="L23">    public XMLVisitor() {</span>
+<span class="fc" id="L24">        Logger msg = Logger.getLogger(&quot;Error&quot;);</span>
+        try {
+<span class="fc" id="L26">            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L27">            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();</span>
+<span class="fc" id="L28">            document = dBuilder.newDocument();</span>
+<span class="nc" id="L29">        } catch (ParserConfigurationException e) {</span>
+<span class="nc" id="L30">            msg.log(Level.WARNING, &quot;erreur dans constructeur XMLVisitor&quot;, e);</span>
+<span class="fc" id="L31">        }</span>
+<span class="fc" id="L32">    }</span>
+
+    private Element createShapeElement(String type, int x, int y) {
+<span class="fc" id="L35">        Element shapeElement = document.createElement(&quot;shape&quot;);</span>
+<span class="fc" id="L36">        Element typeElement = document.createElement(&quot;type&quot;);</span>
+<span class="fc" id="L37">        typeElement.appendChild(document.createTextNode(type));</span>
+<span class="fc" id="L38">        Element xElement = document.createElement(&quot;x&quot;);</span>
+<span class="fc" id="L39">        xElement.appendChild(document.createTextNode(Integer.toString(x)));</span>
+<span class="fc" id="L40">        Element yElement = document.createElement(&quot;y&quot;);</span>
+<span class="fc" id="L41">        yElement.appendChild(document.createTextNode(Integer.toString(y)));</span>
+
+<span class="fc" id="L43">        shapeElement.appendChild(typeElement);</span>
+<span class="fc" id="L44">        shapeElement.appendChild(xElement);</span>
+<span class="fc" id="L45">        shapeElement.appendChild(yElement);</span>
+
+<span class="fc" id="L47">        return shapeElement;</span>
+    }
+
+    @Override
+    public void visit(SimpleShape simpleShape) {
+<span class="fc" id="L52">        rootElement = createShapeElement(simpleShape.getType(), simpleShape.getX(), simpleShape.getY());</span>
+<span class="fc" id="L53">    }</span>
+
+    public String getRepresentation() {
+<span class="fc" id="L56">        return elementToString(rootElement);</span>
+    }
+
+    private String elementToString(Element element) {
+
+<span class="fc" id="L61">        Logger msg = Logger.getLogger(&quot;Error&quot;);</span>
+        try {
+<span class="fc" id="L63">            document = element.getOwnerDocument();</span>
+<span class="fc" id="L64">            document.appendChild(element);</span>
+<span class="fc" id="L65">            javax.xml.transform.TransformerFactory transformerFactory = javax.xml.transform.TransformerFactory.newInstance();</span>
+   
+            // Disable access to external entities in XML parsing
+<span class="fc" id="L68">            transformerFactory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="fc" id="L69">            transformerFactory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, &quot;&quot;);</span>
+<span class="fc" id="L70">            transformerFactory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET, &quot;&quot;);</span>
+<span class="fc" id="L71">            javax.xml.transform.Transformer transformer = transformerFactory.newTransformer();</span>
+<span class="fc" id="L72">            transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="fc" id="L73">            transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, &quot;yes&quot;);</span>
+<span class="fc" id="L74">            javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(new java.io.StringWriter());</span>
+<span class="fc" id="L75">            javax.xml.transform.dom.DOMSource source = new javax.xml.transform.dom.DOMSource(document);</span>
+<span class="fc" id="L76">            transformer.transform(source, result);</span>
+<span class="fc" id="L77">            String xmlString = result.getWriter().toString();</span>
+    
+            // Remove line breaks and extra whitespace
+
+<span class="fc" id="L81">            xmlString = xmlString.replaceAll(&quot;\\n\\s*&quot;, &quot;&quot;);</span>
+
+    
+
+<span class="fc" id="L85">            return xmlString;</span>
+<span class="nc" id="L86">        } catch (Exception e) {</span>
+<span class="nc" id="L87">            msg.log(Level.WARNING, &quot;erreur dans elementToString XMLVisitor&quot;, e);</span>
+<span class="nc" id="L88">            return null;</span>
+        }
+    }
+
+    public void  reset() throws ParserConfigurationException {
+<span class="nc" id="L93">        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L94">        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();</span>
+<span class="nc" id="L95">        document = dBuilder.newDocument();</span>
+<span class="nc" id="L96">        rootElement = null;</span>
+<span class="nc" id="L97">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

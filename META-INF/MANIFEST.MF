@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Persistence_etudiants
+Bundle-SymbolicName: Persistence_etudiants
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: Persistence.etudiants
+Export-Package: command,
+ commandTest,
+ edu.uga.miage.m1.polygons.gui,
+ edu.uga.miage.m1.polygons.gui.persistence,
+ edu.uga.miage.m1.polygons.gui.shapes

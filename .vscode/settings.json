@@ -1,0 +1,7 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "undefined",
+        "projectKey": "fr.uga.miage.m1:Persistene_g2_10"
+    }
+}

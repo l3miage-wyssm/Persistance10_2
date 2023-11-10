@@ -1,0 +1,6 @@
+persistenceTest/JsonVisitorTest.class
+persistenceTest/XMLVisitorTest.class
+shapesTest/SquareTest.class
+shapesTest/TriangleTest.class
+commandTest/DrawShapeCommandTest.class
+shapesTest/CircleTest.class
