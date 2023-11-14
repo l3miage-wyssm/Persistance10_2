@@ -72,9 +72,11 @@ import java.util.logging.*;
  *
  */
 public class JDrawingFrame extends JFrame
-    implements MouseListener, MouseMotionListener
-{
-	private enum Shapes {SQUARE, TRIANGLE, CIRCLE}
+        implements MouseListener, MouseMotionListener {
+    private enum Shapes {
+        SQUARE, TRIANGLE, CIRCLE
+    }
+
     private static final long serialVersionUID = 1L;
     private JToolBar mToolbar;
     private Shapes mSelected;
@@ -88,7 +90,6 @@ public class JDrawingFrame extends JFrame
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
 
 
-    
     /**
      * Tracks buttons to manage the background.
      */
@@ -96,12 +97,12 @@ public class JDrawingFrame extends JFrame
 
     /**
      * Default constructor that populates the main window.
-     * @param frameName 
-    **/
-    public JDrawingFrame(String frameName)
-    {
+     * 
+     * @param frameName
+     **/
+    public JDrawingFrame(String frameName) {
         super(frameName);
-        
+
         // Instantiates components
         mToolbar = new JToolBar("Toolbar");
         mPanel = new DrawingPanel();
@@ -118,7 +119,7 @@ public class JDrawingFrame extends JFrame
         mExportJSON.addActionListener(mReusableActionListener);
         mExportXML.addActionListener(mReusableActionListener);
         shapesList = new ArrayList<>();
-        
+
         // Fills the panel
         setLayout(new BorderLayout());
         add(mToolbar, BorderLayout.NORTH);
@@ -129,12 +130,12 @@ public class JDrawingFrame extends JFrame
         addShape(Shapes.SQUARE, new ImageIcon(getClass().getResource("images/square.png")));
         addShape(Shapes.TRIANGLE, new ImageIcon(getClass().getResource("images/triangle.png")));
         addShape(Shapes.CIRCLE, new ImageIcon(getClass().getResource("images/circle.png")));
-        mToolbar.add(exportJSON,mExportJSON);
-        mToolbar.add(exportXML,mExportXML);
+        mToolbar.add(exportJSON, mExportJSON);
+        mToolbar.add(exportXML, mExportXML);
 
         setPreferredSize(new Dimension(400, 400));
 
-        //Ajoute un gestionnaire d'evenements de clavier pur "Ctr-Z"
+        // Ajoute un gestionnaire d'evenements de clavier pur "Ctr-Z"
         InputMap inputMap = mPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = mPanel.getActionMap();
 
@@ -142,28 +143,26 @@ public class JDrawingFrame extends JFrame
         inputMap.put(ctrlZ, "deleteLastShapeAction");
         actionMap.put("deleteLastShapeAction", new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e){
+            public void actionPerformed(ActionEvent e) {
                 deleteLastShape();
             }
         });
     }
 
-
-	/**
+    /**
      * Injects an available <tt>SimpleShape</tt> into the drawing frame.
+     * 
      * @param name The name of the injected <tt>SimpleShape</tt>.
      * @param icon The icon associated with the injected <tt>SimpleShape</tt>.
-    **/
-    private void addShape(Shapes shape, ImageIcon icon)
-    {
+     **/
+    private void addShape(Shapes shape, ImageIcon icon) {
         JButton button = new JButton(icon);
 		button.setBorderPainted(false);
         mButtons.put(shape, button);
         button.setActionCommand(shape.toString());
         button.addActionListener(mReusableActionListener);
 
-        if (mSelected == null)
-        {
+        if (mSelected == null) {
             button.doClick();
         }
 
@@ -172,47 +171,51 @@ public class JDrawingFrame extends JFrame
         repaint();
     }
 
-    public void mouseClicked(MouseEvent evt)
-    {
+    public void mouseClicked(MouseEvent evt) {
         Logger msg = Logger.getLogger("Error");
-        if (mPanel.contains(evt.getX(), evt.getY()))
-        {
-        	Graphics2D g2 = (Graphics2D) mPanel.getGraphics();
-        	switch(mSelected)
-        	{
-		    	case CIRCLE: 		Circle circle = new Circle(evt.getX(), evt.getY());
-		    						circle.draw(g2);
-                                    shapesList.add(circle);
-									break;
-	    		case TRIANGLE: 		Triangle triangle = new Triangle(evt.getX(), evt.getY());
-                                    triangle.draw(g2);
-                                    shapesList.add(triangle);
-									break;
-        		case SQUARE: 		Square square = new Square(evt.getX(), evt.getY());
-                                    square.draw(g2);
-                                    shapesList.add(square);
-        							break;
-        		default: 			msg.log(Level.INFO, "No shape named {0}", mSelected);
- 
-        	}
+        if (mPanel.contains(evt.getX(), evt.getY())) {
+            Graphics2D g2 = (Graphics2D) mPanel.getGraphics();
+            switch (mSelected) {
+                case CIRCLE:
+                    Circle circle = new Circle(evt.getX(), evt.getY());
+                    circle.draw(g2);
+                    shapesList.add(circle);
+                    break;
+                case TRIANGLE:
+                    Triangle triangle = new Triangle(evt.getX(), evt.getY());
+                    triangle.draw(g2);
+                    shapesList.add(triangle);
+                    break;
+                case SQUARE:
+                    Square square = new Square(evt.getX(), evt.getY());
+                    square.draw(g2);
+                    shapesList.add(square);
+                    break;
+                default:
+                    msg.log(Level.INFO, "No shape named {0}", mSelected);
+
+            }
         }
     }
 
     /**
      * Implements an empty method for the <tt>MouseListener</tt> interface.
+     * 
      * @param evt The associated mouse event.
-    **/
-    public void mouseEntered(MouseEvent evt){
-        // This method is intentionally left empty because we do not need to perform any action
-        // when the mouse enters the component. If functionality is needed, it should be implemented here.
+     **/
+    public void mouseEntered(MouseEvent evt) {
+        // This method is intentionally left empty because we do not need to perform any
+        // action
+        // when the mouse enters the component. If functionality is needed, it should be
+        // implemented here.
     }
 
     /**
      * Implements an empty method for the <tt>MouseListener</tt> interface.
+     * 
      * @param evt The associated mouse event.
     **/
-    public void mouseExited(MouseEvent evt)
-    {
+    public void mouseExited(MouseEvent evt) {
     	mLabel.setText(" ");
     	mLabel.repaint();
     }
@@ -220,9 +223,10 @@ public class JDrawingFrame extends JFrame
     /**
      * Implements method for the <tt>MouseListener</tt> interface to initiate
      * shape dragging.
+     * 
      * @param evt The associated mouse event.
-    **/
-    public void mousePressed(MouseEvent evt){
+     **/
+    public void mousePressed(MouseEvent evt) {
         // Implement the logic to handle mouse press events here
         // For example, you can add code to respond to a mouse click.
     }
@@ -230,19 +234,23 @@ public class JDrawingFrame extends JFrame
     /**
      * Implements method for the <tt>MouseListener</tt> interface to complete
      * shape dragging.
+     * 
      * @param evt The associated mouse event.
-    **/
-    public void mouseReleased(MouseEvent evt){
-        // This method is intentionally left empty for now because we don't need to handle mouse release events here.
-        // If functionality is needed in the future, it should be implemented within this method.
+     **/
+    public void mouseReleased(MouseEvent evt) {
+        // This method is intentionally left empty for now because we don't need to
+        // handle mouse release events here.
+        // If functionality is needed in the future, it should be implemented within
+        // this method.
     }
 
     /**
      * Implements method for the <tt>MouseMotionListener</tt> interface to
      * move a dragged shape.
+     * 
      * @param evt The associated mouse event.
-    **/
-    public void mouseDragged(MouseEvent evt){
+     **/
+    public void mouseDragged(MouseEvent evt) {
         // Implement the logic to handle mouse dragging events here
         // For example, you can add code to respond to dragging gestures.
     }
@@ -250,73 +258,47 @@ public class JDrawingFrame extends JFrame
     /**
      * Implements an empty method for the <tt>MouseMotionListener</tt>
      * interface.
+     * 
      * @param evt The associated mouse event.
-    **/
-    public void mouseMoved(MouseEvent evt)
-    {
-    	modifyLabel(evt);
+     **/
+    public void mouseMoved(MouseEvent evt) {
+        modifyLabel(evt);
     }
-    
+
     private void modifyLabel(MouseEvent evt) {
-    	mLabel.setText("(" + evt.getX() + "," + evt.getY() + ")");    	
+        mLabel.setText("(" + evt.getX() + "," + evt.getY() + ")");
+    }  
+
+    private void deleteLastShape() {
+        if (!shapesList.isEmpty()) {
+            shapesList.remove(shapesList.size() - 1);
+            mPanel.repaint();
+        }   
     }
 
     /**
      * Simple action listener for shape tool bar buttons that sets
      * the drawing frame's currently selected shape when receiving
-     * an action event.
+     * an action event
     **/
-    private class ShapeActionListener implements ActionListener
-    {
-        private String exportShapesToJson() {
-            JSonVisitor jSonVisitor = new JSonVisitor();
-            StringBuilder jsonResult = new StringBuilder();
-            jsonResult.append("{�\n\"shapes\":[\n");
-            for(Visitable shape : shapesList) {
-                shape.accept(jSonVisitor);
-                
-                jsonResult.append(jSonVisitor.getRepresentation()).append("\n");
-                jSonVisitor.reset();
-            }
-            jsonResult.append("]\n}");
-            return jsonResult.toString();
-        }
-        
-        private String exportShapesToXml() throws ParserConfigurationException {
-            XMLVisitor xmlVisitor = new XMLVisitor();
-            StringBuilder xmlResult = new StringBuilder();
-            xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            xmlResult.append("<root>\n<shapes>\n");
-            for(Visitable shape : shapesList) {
-                shape.accept(xmlVisitor);
-                xmlResult.append("�\t").append(xmlVisitor.getRepresentation()).append("\n");
-                xmlVisitor.reset();
-            }
-            xmlResult.append("</shapes>\n</root>");
-            return xmlResult.toString();
-        }
 
-        public void actionPerformed(ActionEvent evt)
-        {
+    class ShapeActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent evt) {
             Logger msg = Logger.getLogger("Error");
-            if(evt.getActionCommand().equals(exportXML)){
-            	try {
+            if (evt.getActionCommand().equals(exportXML)) {
+                File file = new File("export.xml");
+            	try(FileWriter fileWriter = new FileWriter(file);) {
             		String xmlShapes = exportShapesToXml();
-                    File file = new File("export.xml");
-                    FileWriter fileWriter = new FileWriter(file);
                     fileWriter.write(xmlShapes);
-                    fileWriter.close();
                 } catch (IOException | ParserConfigurationException e) {
                     msg.log(Level.WARNING, "erreur dans l''export xml", e);
-                }
-            } else if(evt.getActionCommand().equals(exportJSON)){
-            	String jsonShapes = exportShapesToJson();
+                }  
+            } else if (evt.getActionCommand().equals(exportJSON)) {
             	
-                try {
-                	File file = new File("export.json");
-                	FileWriter fileWriter = new FileWriter(file);
+            	File file = new File("export.json");
+                try(FileWriter fileWriter = new FileWriter(file);) {
+                	String jsonShapes = exportShapesToJson();
                 	fileWriter.write(jsonShapes);
-                	fileWriter.close();
                 } catch (IOException e) {
                     msg.log(Level.WARNING, "Erreur dans l''export JSON", e);
                 }
@@ -333,29 +315,48 @@ public class JDrawingFrame extends JFrame
 					btn.setBorderPainted(false);
 				}
 				btn.repaint();
-			}
+			}    
+        }
+
+        private String exportShapesToJson() {
+            JSonVisitor jSonVisitor = new JSonVisitor();
+            StringBuilder jsonResult = new StringBuilder();
+            jsonResult.append("{�\n\"shapes\":[\n");
+            for(Visitable shape : shapesList) {
+                shape.accept(jSonVisitor);
+                
+                jsonResult.append(jSonVisitor.getRepresentation()).append("\n");
+                jSonVisitor.reset();
+            }
+            jsonResult.append("]\n}");
+            return jsonResult.toString();
+        }
+
+        private String exportShapesToXml() throws ParserConfigurationException {
+            XMLVisitor xmlVisitor = new XMLVisitor();
+            StringBuilder xmlResult = new StringBuilder();
+            xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            xmlResult.append("<root>\n<shapes>\n");
+            for(Visitable shape : shapesList) {
+                shape.accept(xmlVisitor);
+                xmlResult.append("�\t").append(xmlVisitor.getRepresentation()).append("\n");
+                xmlVisitor.reset();
+            }
+            xmlResult.append("</shapes>\n</root>");
+            return xmlResult.toString();
         }
     }
-    
-    private class DrawingPanel extends JPanel {
 
+    class DrawingPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
-            super.paintComponent(g); 
-            for(Visitable shape : shapesList){
-                if(shape instanceof SimpleShape) { 
-                    ((SimpleShape)shape).draw((Graphics2D) g);
+            super.paintComponent(g);
+            for (Visitable shape : shapesList) {
+                if (shape instanceof SimpleShape) {
+                    ((SimpleShape) shape).draw((Graphics2D) g);
                 }
             }
         }
     }
 
-    private void deleteLastShape(){
-        if(!shapesList.isEmpty()){
-            shapesList.remove(shapesList.size()-1);
-            mPanel.repaint();
-        }   
-    }
-    
-    
 }
