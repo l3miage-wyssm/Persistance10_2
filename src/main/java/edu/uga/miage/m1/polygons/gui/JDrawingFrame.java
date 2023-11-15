@@ -35,10 +35,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -52,9 +50,6 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.xml.parsers.ParserConfigurationException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import edu.uga.miage.m1.polygons.gui.persistence.JSonVisitor;
 import edu.uga.miage.m1.polygons.gui.persistence.Visitable;
@@ -91,19 +86,6 @@ public class JDrawingFrame extends JFrame
     private String exportXML = "Export XML";
     private transient List<Visitable> shapesList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
-
-    private class DrawingPanel extends JPanel {
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            for (Visitable shape : shapesList) {
-                if (shape instanceof SimpleShape) {
-                    ((SimpleShape) shape).draw((Graphics2D) g);
-                }
-            }
-        }
-    }
 
     /**
      * Tracks buttons to manage the background.
@@ -284,32 +266,36 @@ public class JDrawingFrame extends JFrame
         mLabel.setText("(" + evt.getX() + "," + evt.getY() + ")");
     }
 
+    private void deleteLastShape() {
+        if (!shapesList.isEmpty()) {
+            shapesList.remove(shapesList.size() - 1);
+            mPanel.repaint();
+        }
+    }
+
     /**
      * Simple action listener for shape tool bar buttons that sets
      * the drawing frame's currently selected shape when receiving
-     * an action event.
+     * an action event
      **/
-    private class ShapeActionListener implements ActionListener {
+
+    class ShapeActionListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             Logger msg = Logger.getLogger("Error");
             if (evt.getActionCommand().equals(exportXML)) {
-                try {
+                File file = new File("export.xml");
+                try (FileWriter fileWriter = new FileWriter(file);) {
                     String xmlShapes = exportShapesToXml();
-                    File file = new File("export.xml");
-                    FileWriter fileWriter = new FileWriter(file);
                     fileWriter.write(xmlShapes);
-                    fileWriter.close();
                 } catch (IOException | ParserConfigurationException e) {
                     msg.log(Level.WARNING, "erreur dans l''export xml", e);
                 }
             } else if (evt.getActionCommand().equals(exportJSON)) {
-                String jsonShapes = exportShapesToJson();
 
-                try {
-                    File file = new File("export.json");
-                    FileWriter fileWriter = new FileWriter(file);
+                File file = new File("export.json");
+                try (FileWriter fileWriter = new FileWriter(file);) {
+                    String jsonShapes = exportShapesToJson();
                     fileWriter.write(jsonShapes);
-                    fileWriter.close();
                 } catch (IOException e) {
                     msg.log(Level.WARNING, "Erreur dans l''export JSON", e);
                 }
@@ -328,40 +314,46 @@ public class JDrawingFrame extends JFrame
                 btn.repaint();
             }
         }
-    }
 
-    private void deleteLastShape() {
-        if (!shapesList.isEmpty()) {
-            shapesList.remove(shapesList.size() - 1);
-            mPanel.repaint();
+        private String exportShapesToJson() {
+            JSonVisitor jSonVisitor = new JSonVisitor();
+            StringBuilder jsonResult = new StringBuilder();
+            jsonResult.append("{\n\"shapes\":[\n");
+            for (Visitable shape : shapesList) {
+                shape.accept(jSonVisitor);
+
+                jsonResult.append(jSonVisitor.getRepresentation()).append("\n");
+                jSonVisitor.reset();
+            }
+            jsonResult.append("]\n}");
+            return jsonResult.toString();
+        }
+
+        private String exportShapesToXml() throws ParserConfigurationException {
+            XMLVisitor xmlVisitor = new XMLVisitor();
+            StringBuilder xmlResult = new StringBuilder();
+            xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            xmlResult.append("<root>\n<shapes>\n");
+            for (Visitable shape : shapesList) {
+                shape.accept(xmlVisitor);
+                xmlResult.append(xmlVisitor.getRepresentation()).append("\n");
+                xmlVisitor.reset();
+            }
+            xmlResult.append("</shapes>\n</root>");
+            return xmlResult.toString();
         }
     }
 
-    private String exportShapesToJson() {
-        JSonVisitor jSonVisitor = new JSonVisitor();
-        StringBuilder jsonResult = new StringBuilder();
-        jsonResult.append("{�\n\"shapes\":[\n");
-        for (Visitable shape : shapesList) {
-            shape.accept(jSonVisitor);
-
-            jsonResult.append(jSonVisitor.getRepresentation()).append("\n");
-            jSonVisitor.reset();
+    class DrawingPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            for (Visitable shape : shapesList) {
+                if (shape instanceof SimpleShape) {
+                    ((SimpleShape) shape).draw((Graphics2D) g);
+                }
+            }
         }
-        jsonResult.append("]\n}");
-        return jsonResult.toString();
     }
 
-    private String exportShapesToXml() throws ParserConfigurationException {
-        XMLVisitor xmlVisitor = new XMLVisitor();
-        StringBuilder xmlResult = new StringBuilder();
-        xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        xmlResult.append("<root>\n<shapes>\n");
-        for (Visitable shape : shapesList) {
-            shape.accept(xmlVisitor);
-            xmlResult.append("�\t").append(xmlVisitor.getRepresentation()).append("\n");
-            xmlVisitor.reset();
-        }
-        xmlResult.append("</shapes>\n</root>");
-        return xmlResult.toString();
-    }
 }
