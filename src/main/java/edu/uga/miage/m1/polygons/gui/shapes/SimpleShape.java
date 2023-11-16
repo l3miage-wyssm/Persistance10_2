@@ -25,8 +25,6 @@ public interface SimpleShape {
 
     String getType();
 
-    void move(int x, int y);
-
     void setX(int x);
 
     void setY(int y);

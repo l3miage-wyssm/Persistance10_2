@@ -36,8 +36,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -52,6 +54,9 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.xml.parsers.ParserConfigurationException;
 
+import edu.uga.miage.m1.polygons.gui.command.Command;
+import edu.uga.miage.m1.polygons.gui.command.CommandMove;
+import edu.uga.miage.m1.polygons.gui.command.CommandShape;
 import edu.uga.miage.m1.polygons.gui.persistence.JSonVisitor;
 import edu.uga.miage.m1.polygons.gui.persistence.Visitable;
 import edu.uga.miage.m1.polygons.gui.persistence.XMLVisitor;
@@ -79,20 +84,25 @@ public class JDrawingFrame extends JFrame
     private static final long serialVersionUID = 1L;
     private JToolBar mToolbar;
     private Shapes mSelected;
-    private JPanel mPanel;
+    public JPanel mPanel;
     private JLabel mLabel;
     private JButton mExportJSON;
     private JButton mExportXML;
     private String exportJSON = "Export JSON";
     private String exportXML = "Export XML";
-    private transient List<SimpleShape> shapesList;
+    public transient List<SimpleShape> shapesList;
+    private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
     private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();
 
     private int startX;
     private int startY;
 
+    Command commandMove;
+
     private transient SimpleShape selectedShape = null;
+
+    private Set<Command> addedCommands = new HashSet<>();
 
     /**
      * Tracks buttons to manage the background.
@@ -123,6 +133,7 @@ public class JDrawingFrame extends JFrame
         mExportJSON.addActionListener(mReusableActionListener);
         mExportXML.addActionListener(mReusableActionListener);
         shapesList = new ArrayList<>();
+        commandList = new ArrayList<>();
 
         // Fills the panel
         setLayout(new BorderLayout());
@@ -145,11 +156,15 @@ public class JDrawingFrame extends JFrame
         ActionMap actionMap = mPanel.getActionMap();
 
         KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK);
-        inputMap.put(ctrlZ, "deleteLastShapeAction");
-        actionMap.put("deleteLastShapeAction", new AbstractAction() {
+        inputMap.put(ctrlZ, "commandList.get(commandList.size() - 1).undo()");
+        actionMap.put("commandList.get(commandList.size() - 1).undo()", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                deleteLastShape();
+                System.out.println("size command avant undo : " + commandList.size());
+                commandList.get(commandList.size() - 1).undo();
+                commandList.remove(commandList.size() - 1);
+                System.out.println("size command apres undo : " + commandList.size());
+                mPanel.repaint();
             }
         });
     }
@@ -198,22 +213,27 @@ public class JDrawingFrame extends JFrame
         Logger msg = Logger.getLogger("Error");
         if (mPanel.contains(evt.getX(), evt.getY())
                 && !((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) {
-            Graphics2D g2 = (Graphics2D) mPanel.getGraphics();
             switch (mSelected) {
                 case CIRCLE:
                     Circle circle = new Circle(evt.getX(), evt.getY());
-                    circle.draw(g2);
                     shapesList.add(circle);
+                    Command commandCircle = new CommandShape(circle, this);
+                    commandCircle.execute();
+                    commandList.add(commandCircle);
                     break;
                 case TRIANGLE:
                     Triangle triangle = new Triangle(evt.getX(), evt.getY());
-                    triangle.draw(g2);
                     shapesList.add(triangle);
+                    Command commandTriangle = new CommandShape(triangle, this);
+                    commandTriangle.execute();
+                    commandList.add(commandTriangle);
                     break;
                 case SQUARE:
                     Square square = new Square(evt.getX(), evt.getY());
-                    square.draw(g2);
                     shapesList.add(square);
+                    Command commandSquare = new CommandShape(square, this);
+                    commandSquare.execute();
+                    commandList.add(commandSquare);
                     break;
                 default:
                     msg.log(Level.INFO, "No shape named {0}", mSelected);
@@ -255,11 +275,13 @@ public class JDrawingFrame extends JFrame
         startY = evt.getY();
 
         for (SimpleShape shape : shapesList) {
-            if (((shape.getX() <= startX + 30) && (shape.getX() >= startX - 30)) && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
-            
+            if (((shape.getX() <= startX + 40) && (shape.getX() >= startX - 40))
+                    && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
+                System.out.println("trouve !");
                 selectedShape = shape;
+                commandMove = new CommandMove(selectedShape);
                 break;
-            
+
             }
         }
 
@@ -276,6 +298,10 @@ public class JDrawingFrame extends JFrame
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, mPanel.getWidth(), mPanel.getHeight());
         shapesList.forEach(shape -> shape.draw(g));
+        if (selectedShape != null) {
+            commandList.add(commandMove);
+        }
+
     }
 
     /**
@@ -287,10 +313,13 @@ public class JDrawingFrame extends JFrame
     public void mouseDragged(MouseEvent evt) {
         // Implement the logic to handle mouse dragging events here
         // For example, you can add code to respond to dragging gestures.
-        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) && selectedShape!=null) {
+        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) && selectedShape != null) {
             int newX = evt.getX();
             int newY = evt.getY();
-            selectedShape.move(newX, newY);
+
+            ((CommandMove) commandMove).setLocation(newX, newY);
+            commandMove.execute();
+            // commandList.add(commandMove);
 
             startX = newX;
             startY = newY;
@@ -310,13 +339,6 @@ public class JDrawingFrame extends JFrame
 
     private void modifyLabel(MouseEvent evt) {
         mLabel.setText("(" + evt.getX() + "," + evt.getY() + ")");
-    }
-
-    private void deleteLastShape() {
-        if (!shapesList.isEmpty()) {
-            shapesList.remove(shapesList.size() - 1);
-            mPanel.repaint();
-        }
     }
 
     /**

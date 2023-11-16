@@ -38,12 +38,6 @@ public abstract class AbstractShape implements SimpleShape, Visitable {
 	}
 
 	@Override
-	public void move(int x, int y) {
-		this.mX = x - 25;
-		this.mY = y - 25;
-	}
-
-	@Override
 	public void setX(int x) {
 		this.mX = x;
 	}
