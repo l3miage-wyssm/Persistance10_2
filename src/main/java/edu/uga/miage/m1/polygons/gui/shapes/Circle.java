@@ -24,7 +24,8 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
-public class Circle extends AbstractShape{
+
+public class Circle extends AbstractShape {
 
     int mX;
 
@@ -33,18 +34,19 @@ public class Circle extends AbstractShape{
     String type;
 
     public Circle(int x, int y) {
-        super(x,y,"circle");
-        this.mX = x;
-        this.mY = y;
+        super(x, y, "circle");
     }
 
     /**
      * Implements the <tt>SimpleShape.draw()</tt> method for painting
      * the shape.
+     * 
      * @param g2 The graphics object used for painting.
      */
     public void draw(Graphics2D g2) {
-    	float f = (float) mX + 50;
+        this.mX = super.getX();
+        this.mY = super.getY();
+        float f = (float) mX + 50;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         GradientPaint gradient = new GradientPaint(mX, mY, Color.RED, f, mY, Color.WHITE);
         g2.setPaint(gradient);
@@ -54,4 +56,11 @@ public class Circle extends AbstractShape{
         g2.setStroke(wideStroke);
         g2.draw(new Ellipse2D.Double(mX, mY, 50, 50));
     }
+
+    /*
+     * public void move(int x, int y) {
+     * this.mX = x;
+     * this.mY = y;
+     * }
+     */
 }

@@ -24,11 +24,13 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
+
 /**
  * This inner class implements the triangle <tt>SimpleShape</tt> service.
  * It simply provides a <tt>draw()</tt> that paints a triangle.
  *
- * @author <a href="mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
+ * @author <a href=
+ *         "mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
  */
 public class Triangle extends AbstractShape {
 
@@ -39,19 +41,21 @@ public class Triangle extends AbstractShape {
     String type;
 
     public Triangle(int x, int y) {
-       super(x,y,"triangle");
-       this.mX = x;
-       this.mY = y;
+        super(x, y, "triangle");
     }
 
     /**
      * Implements the <tt>SimpleShape.draw()</tt> method for painting
      * the shape.
+     * 
      * @param g2 The graphics object used for painting.
      */
     public void draw(Graphics2D g2) {
-    	float f = (float) mX + 50;
-    	float f2 = (float) mX +25;
+        this.mX = super.getX();
+        this.mY = super.getY();
+        System.out.println("draw triangle -> mX : " + this.mX + " mY : " + this.mY);
+        float f = (float) mX + 50;
+        float f2 = (float) mX + 25;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         GradientPaint gradient = new GradientPaint(mX, mY, Color.GREEN, f, mY, Color.WHITE);
         g2.setPaint(gradient);

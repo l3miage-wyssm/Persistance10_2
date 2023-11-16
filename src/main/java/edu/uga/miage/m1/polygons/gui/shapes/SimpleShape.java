@@ -4,23 +4,31 @@ import java.awt.Graphics2D;
 
 /**
  * This interface defines the <tt>SimpleShape</tt> extension. This extension
- * is used to draw shapes. 
+ * is used to draw shapes.
  * 
- * @author <a href="mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
+ * @author <a href=
+ *         "mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
  *
  */
-public interface SimpleShape
-{
+public interface SimpleShape {
 
     /**
      * Method to draw the shape of the extension.
+     * 
      * @param g2 The graphics object used for painting.
      **/
     void draw(Graphics2D g2);
-    
+
     int getX();
-    
+
     int getY();
 
     String getType();
+
+    void move(int x, int y);
+
+    void setX(int x);
+
+    void setY(int y);
+
 }

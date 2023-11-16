@@ -29,7 +29,8 @@ import java.awt.geom.Rectangle2D;
  * This class implements the square <tt>SimpleShape</tt> extension.
  * It simply provides a <tt>draw()</tt> that paints a square.
  *
- * @author <a href="mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
+ * @author <a href=
+ *         "mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
  */
 public class Square extends AbstractShape {
 
@@ -40,20 +41,21 @@ public class Square extends AbstractShape {
     String type;
 
     public Square(int x, int y) {
-        super(x,y,"square");
-        this.mX = x;
-        this.mY = y;
+        super(x, y, "square");
     }
 
     /**
      * Implements the <tt>SimpleShape.draw()</tt> method for painting
      * the shape.
+     * 
      * @param g2 The graphics object used for painting.
      */
     public void draw(Graphics2D g2) {
+        this.mX = super.getX();
+        this.mY = super.getY();
         float f = (float) mX + 50;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        GradientPaint gradient = new GradientPaint(mX, mY, Color.BLUE,f, mY, Color.WHITE);
+        GradientPaint gradient = new GradientPaint(mX, mY, Color.BLUE, f, mY, Color.WHITE);
         g2.setPaint(gradient);
         g2.fill(new Rectangle2D.Double(mX, mY, 50, 50));
         BasicStroke wideStroke = new BasicStroke(2.0f);
