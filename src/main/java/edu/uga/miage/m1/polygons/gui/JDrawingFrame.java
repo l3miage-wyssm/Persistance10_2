@@ -85,14 +85,14 @@ public class JDrawingFrame extends JFrame
     private JButton mExportXML;
     private String exportJSON = "Export JSON";
     private String exportXML = "Export XML";
-    private final List<SimpleShape> shapesList;
+    private transient List<SimpleShape> shapesList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
     private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();
 
     private int startX;
     private int startY;
 
-    private SimpleShape selectedShape = null;
+    private transient SimpleShape selectedShape = null;
 
     /**
      * Tracks buttons to manage the background.
@@ -219,7 +219,6 @@ public class JDrawingFrame extends JFrame
                     msg.log(Level.INFO, "No shape named {0}", mSelected);
 
             }
-            System.out.println("size : " + shapesList.size());
         }
     }
 
@@ -252,21 +251,15 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mousePressed(MouseEvent evt) {
-        // Implement the logic to handle mouse press events here
-        // For example, you can add code to respond to a mouse click.
         startX = evt.getX();
         startY = evt.getY();
-        // selectedShape = null;
 
         for (SimpleShape shape : shapesList) {
-            System.out
-                    .println("shape -> type : " + shape.getType() + " mX : " + shape.getX() + " mY : " + shape.getY());
-            if ((shape.getX() <= startX + 30) && (shape.getX() >= startX - 30)) {
-                if ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30)) {
-                    System.out.println("trouve !");
-                    selectedShape = shape;
-                    break;
-                }
+            if (((shape.getX() <= startX + 30) && (shape.getX() >= startX - 30)) && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
+            
+                selectedShape = shape;
+                break;
+            
             }
         }
 
@@ -279,21 +272,10 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mouseReleased(MouseEvent evt) {
-        // This method is intentionally left empty for now because we don't need to
-        // handle mouse release events here.
-        // If functionality is needed in the future, it should be implemented within
-        // this method.
-
-        // mPanel.repaint();
         Graphics2D g = (Graphics2D) mPanel.getGraphics();
-        // g.clearRect(0, 0, mPanel.getWidth(), mPanel.getHeight());
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, mPanel.getWidth(), mPanel.getHeight());
-        shapesList.forEach(shape -> {
-            shape.draw(g);
-            System.out.println("Shape repaint :" + shape.getX() + ' ' + shape.getY());
-        });
-        System.out.println("bb");
+        shapesList.forEach(shape -> shape.draw(g));
     }
 
     /**
@@ -305,19 +287,13 @@ public class JDrawingFrame extends JFrame
     public void mouseDragged(MouseEvent evt) {
         // Implement the logic to handle mouse dragging events here
         // For example, you can add code to respond to dragging gestures.
-        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected())) {
-            if (selectedShape != null) {
-                int newX = evt.getX();
-                int newY = evt.getY();
+        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) && selectedShape!=null) {
+            int newX = evt.getX();
+            int newY = evt.getY();
+            selectedShape.move(newX, newY);
 
-                System.out.println("selectedShape before move : " + selectedShape.getX() + " " + selectedShape.getY());
-                selectedShape.move(newX, newY);
-                System.out.println("selectedShape after move : " + selectedShape.getX() + " " + selectedShape.getY());
-
-                startX = newX;
-                startY = newY;
-
-            }
+            startX = newX;
+            startY = newY;
         }
 
     }

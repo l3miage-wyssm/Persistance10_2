@@ -56,11 +56,4 @@ public class Circle extends AbstractShape {
         g2.setStroke(wideStroke);
         g2.draw(new Ellipse2D.Double(mX, mY, 50, 50));
     }
-
-    /*
-     * public void move(int x, int y) {
-     * this.mX = x;
-     * this.mY = y;
-     * }
-     */
 }

@@ -3,38 +3,54 @@
 import edu.uga.miage.m1.polygons.gui.persistence.Visitable;
 import edu.uga.miage.m1.polygons.gui.persistence.Visitor;
 
-public abstract class AbstractShape implements SimpleShape, Visitable{
-	
+public abstract class AbstractShape implements SimpleShape, Visitable {
+
 	private int mX;
-	
+
 	private int mY;
-	
+
 	private String type;
-	
-<span class="fc" id="L14">	protected AbstractShape(int x,int y, String type) {</span>
-<span class="fc" id="L15">		mX = x-25;</span>
-<span class="fc" id="L16">		mY= y-25;</span>
-<span class="fc" id="L17">		this.type=type;</span>
+
+<span class="fc" id="L14">	protected AbstractShape(int x, int y, String type) {</span>
+<span class="fc" id="L15">		mX = x - 25;</span>
+<span class="fc" id="L16">		mY = y - 25;</span>
+<span class="fc" id="L17">		this.type = type;</span>
 <span class="fc" id="L18">	}</span>
-	
+
 	@Override
 	public int getX() {
 <span class="fc" id="L22">		return mX;</span>
 	}
-	
+
 	@Override
 	public int getY() {
 <span class="fc" id="L27">		return mY;</span>
 	}
-	
+
 	@Override
 	public String getType() {
 <span class="fc" id="L32">		return type;</span>
 	}
-	
+
 	@Override
 	public void accept(Visitor visitor) {
 <span class="fc" id="L37">		visitor.visit(this);</span>
 <span class="fc" id="L38">	}</span>
+
+	@Override
+	public void move(int x, int y) {
+<span class="nc" id="L42">		this.mX = x - 25;</span>
+<span class="nc" id="L43">		this.mY = y - 25;</span>
+<span class="nc" id="L44">	}</span>
+
+	@Override
+	public void setX(int x) {
+<span class="nc" id="L48">		this.mX = x;</span>
+<span class="nc" id="L49">	}</span>
+
+	@Override
+	public void setY(int y) {
+<span class="nc" id="L53">		this.mY = y;</span>
+<span class="nc" id="L54">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -53,7 +53,6 @@ public class Triangle extends AbstractShape {
     public void draw(Graphics2D g2) {
         this.mX = super.getX();
         this.mY = super.getY();
-        System.out.println("draw triangle -> mX : " + this.mX + " mY : " + this.mY);
         float f = (float) mX + 50;
         float f2 = (float) mX + 25;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

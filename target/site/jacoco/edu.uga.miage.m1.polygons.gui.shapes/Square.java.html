@@ -29,7 +29,8 @@ import java.awt.geom.Rectangle2D;
  * This class implements the square &lt;tt&gt;SimpleShape&lt;/tt&gt; extension.
  * It simply provides a &lt;tt&gt;draw()&lt;/tt&gt; that paints a square.
  *
- * @author &lt;a href=&quot;mailto:christophe.saint-marcel@univ-grenoble-alpes.fr&quot;&gt;Christophe&lt;/a&gt;
+ * @author &lt;a href=
+ *         &quot;mailto:christophe.saint-marcel@univ-grenoble-alpes.fr&quot;&gt;Christophe&lt;/a&gt;
  */
 public class Square extends AbstractShape {
 
@@ -40,26 +41,27 @@ public class Square extends AbstractShape {
     String type;
 
     public Square(int x, int y) {
-<span class="fc" id="L43">        super(x,y,&quot;square&quot;);</span>
-<span class="fc" id="L44">        this.mX = x;</span>
-<span class="fc" id="L45">        this.mY = y;</span>
-<span class="fc" id="L46">    }</span>
+<span class="fc" id="L44">        super(x, y, &quot;square&quot;);</span>
+<span class="fc" id="L45">    }</span>
 
     /**
      * Implements the &lt;tt&gt;SimpleShape.draw()&lt;/tt&gt; method for painting
      * the shape.
+     * 
      * @param g2 The graphics object used for painting.
      */
     public void draw(Graphics2D g2) {
-<span class="fc" id="L54">        float f = (float) mX + 50;</span>
-<span class="fc" id="L55">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
-<span class="fc" id="L56">        GradientPaint gradient = new GradientPaint(mX, mY, Color.BLUE,f, mY, Color.WHITE);</span>
-<span class="fc" id="L57">        g2.setPaint(gradient);</span>
-<span class="fc" id="L58">        g2.fill(new Rectangle2D.Double(mX, mY, 50, 50));</span>
-<span class="fc" id="L59">        BasicStroke wideStroke = new BasicStroke(2.0f);</span>
-<span class="fc" id="L60">        g2.setColor(Color.black);</span>
-<span class="fc" id="L61">        g2.setStroke(wideStroke);</span>
-<span class="fc" id="L62">        g2.draw(new Rectangle2D.Double(mX, mY, 50, 50));</span>
-<span class="fc" id="L63">    }</span>
+<span class="fc" id="L54">        this.mX = super.getX();</span>
+<span class="fc" id="L55">        this.mY = super.getY();</span>
+<span class="fc" id="L56">        float f = (float) mX + 50;</span>
+<span class="fc" id="L57">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
+<span class="fc" id="L58">        GradientPaint gradient = new GradientPaint(mX, mY, Color.BLUE, f, mY, Color.WHITE);</span>
+<span class="fc" id="L59">        g2.setPaint(gradient);</span>
+<span class="fc" id="L60">        g2.fill(new Rectangle2D.Double(mX, mY, 50, 50));</span>
+<span class="fc" id="L61">        BasicStroke wideStroke = new BasicStroke(2.0f);</span>
+<span class="fc" id="L62">        g2.setColor(Color.black);</span>
+<span class="fc" id="L63">        g2.setStroke(wideStroke);</span>
+<span class="fc" id="L64">        g2.draw(new Rectangle2D.Double(mX, mY, 50, 50));</span>
+<span class="fc" id="L65">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
