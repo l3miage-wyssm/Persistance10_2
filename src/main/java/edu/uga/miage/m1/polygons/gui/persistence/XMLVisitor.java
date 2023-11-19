@@ -12,7 +12,8 @@ import org.w3c.dom.Element;
 import edu.uga.miage.m1.polygons.gui.shapes.SimpleShape;
 
 /**
- * @author <a href="mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
+ * @author <a href=
+ *         "mailto:christophe.saint-marcel@univ-grenoble-alpes.fr">Christophe</a>
  */
 
 public class XMLVisitor implements Visitor {
@@ -62,8 +63,9 @@ public class XMLVisitor implements Visitor {
         try {
             document = element.getOwnerDocument();
             document.appendChild(element);
-            javax.xml.transform.TransformerFactory transformerFactory = javax.xml.transform.TransformerFactory.newInstance();
-   
+            javax.xml.transform.TransformerFactory transformerFactory = javax.xml.transform.TransformerFactory
+                    .newInstance();
+
             // Disable access to external entities in XML parsing
             transformerFactory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
             transformerFactory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "");
@@ -71,16 +73,15 @@ public class XMLVisitor implements Visitor {
             javax.xml.transform.Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-            javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(new java.io.StringWriter());
+            javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(
+                    new java.io.StringWriter());
             javax.xml.transform.dom.DOMSource source = new javax.xml.transform.dom.DOMSource(document);
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
-    
+
             // Remove line breaks and extra whitespace
 
-            xmlString = xmlString.replaceAll("\\n\\s*", "");
-
-    
+            xmlString = xmlString.trim();
 
             return xmlString;
         } catch (Exception e) {
@@ -89,11 +90,11 @@ public class XMLVisitor implements Visitor {
         }
     }
 
-    public void  reset() throws ParserConfigurationException {
+    public void reset() throws ParserConfigurationException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         document = dBuilder.newDocument();
         rootElement = null;
     }
-    
+
 }

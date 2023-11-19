@@ -1,13 +1,15 @@
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/shapes/Circle.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/shapes/SimpleShape.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/persistence/JSonVisitor.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/command/Command.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/persistence/Visitable.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/JDrawingFrame.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/shapes/Square.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/GUIHelper.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/App.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/shapes/AbstractShape.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/persistence/XMLVisitor.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/persistence/Visitor.java
-/home/w/wyssm/M1MIAGE/PC/visite du matin/src/main/java/edu/uga/miage/m1/polygons/gui/shapes/Triangle.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\command\Command.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\persistence\Visitable.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\persistence\XMLVisitor.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\GUIHelper.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\shapes\AbstractShape.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\command\CommandMove.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\persistence\JSonVisitor.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\shapes\Circle.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\shapes\Triangle.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\command\CommandShape.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\JDrawingFrame.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\persistence\Visitor.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\shapes\SimpleShape.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\App.java
+C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\src\main\java\edu\uga\miage\m1\polygons\gui\shapes\Square.java

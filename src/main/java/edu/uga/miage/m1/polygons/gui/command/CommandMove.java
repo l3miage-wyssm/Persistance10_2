@@ -1,6 +1,5 @@
 package edu.uga.miage.m1.polygons.gui.command;
 
-import edu.uga.miage.m1.polygons.gui.JDrawingFrame;
 import edu.uga.miage.m1.polygons.gui.shapes.SimpleShape;
 
 public class CommandMove implements Command {

@@ -44,17 +44,17 @@ public class Circle extends AbstractShape {
      * @param g2 The graphics object used for painting.
      */
     public void draw(Graphics2D g2) {
-<span class="nc" id="L47">        this.mX = super.getX();</span>
-<span class="nc" id="L48">        this.mY = super.getY();</span>
-<span class="nc" id="L49">        float f = (float) mX + 50;</span>
-<span class="nc" id="L50">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
-<span class="nc" id="L51">        GradientPaint gradient = new GradientPaint(mX, mY, Color.RED, f, mY, Color.WHITE);</span>
-<span class="nc" id="L52">        g2.setPaint(gradient);</span>
-<span class="nc" id="L53">        g2.fill(new Ellipse2D.Double(mX, mY, 50, 50));</span>
-<span class="nc" id="L54">        BasicStroke wideStroke = new BasicStroke(2.0f);</span>
-<span class="nc" id="L55">        g2.setColor(Color.black);</span>
-<span class="nc" id="L56">        g2.setStroke(wideStroke);</span>
-<span class="nc" id="L57">        g2.draw(new Ellipse2D.Double(mX, mY, 50, 50));</span>
-<span class="nc" id="L58">    }</span>
+<span class="fc" id="L47">        this.mX = super.getX();</span>
+<span class="fc" id="L48">        this.mY = super.getY();</span>
+<span class="fc" id="L49">        float f = (float) mX + 50;</span>
+<span class="fc" id="L50">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
+<span class="fc" id="L51">        GradientPaint gradient = new GradientPaint(mX, mY, Color.RED, f, mY, Color.WHITE);</span>
+<span class="fc" id="L52">        g2.setPaint(gradient);</span>
+<span class="fc" id="L53">        g2.fill(new Ellipse2D.Double(mX, mY, 50, 50));</span>
+<span class="fc" id="L54">        BasicStroke wideStroke = new BasicStroke(2.0f);</span>
+<span class="fc" id="L55">        g2.setColor(Color.black);</span>
+<span class="fc" id="L56">        g2.setStroke(wideStroke);</span>
+<span class="fc" id="L57">        g2.draw(new Ellipse2D.Double(mX, mY, 50, 50));</span>
+<span class="fc" id="L58">    }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

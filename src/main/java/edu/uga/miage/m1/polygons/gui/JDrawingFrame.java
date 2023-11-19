@@ -36,10 +36,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -84,13 +82,15 @@ public class JDrawingFrame extends JFrame
     private static final long serialVersionUID = 1L;
     private JToolBar mToolbar;
     private Shapes mSelected;
-    public JPanel mPanel;
+    private JPanel mPanel;
     private JLabel mLabel;
     private JButton mExportJSON;
     private JButton mExportXML;
+    private JButton group;
+    private String groupement = "Grouper";
     private String exportJSON = "Export JSON";
     private String exportXML = "Export XML";
-    public transient List<SimpleShape> shapesList;
+    private transient List<SimpleShape> shapesList;
     private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
     private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();
@@ -98,11 +98,9 @@ public class JDrawingFrame extends JFrame
     private int startX;
     private int startY;
 
-    Command commandMove;
+    private transient Command commandMove;
 
     private transient SimpleShape selectedShape = null;
-
-    private Set<Command> addedCommands = new HashSet<>();
 
     /**
      * Tracks buttons to manage the background.
@@ -128,8 +126,10 @@ public class JDrawingFrame extends JFrame
         mLabel = new JLabel(" ", javax.swing.SwingConstants.LEFT);
         mExportJSON = new JButton(exportJSON);
         mExportXML = new JButton(exportXML);
+        group = new JButton(groupement);
         mExportJSON.setActionCommand(exportJSON);
         mExportXML.setActionCommand(exportXML);
+        group.setActionCommand(groupement);
         mExportJSON.addActionListener(mReusableActionListener);
         mExportXML.addActionListener(mReusableActionListener);
         shapesList = new ArrayList<>();
@@ -160,13 +160,19 @@ public class JDrawingFrame extends JFrame
         actionMap.put("commandList.get(commandList.size() - 1).undo()", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("size command avant undo : " + commandList.size());
                 commandList.get(commandList.size() - 1).undo();
                 commandList.remove(commandList.size() - 1);
-                System.out.println("size command apres undo : " + commandList.size());
                 mPanel.repaint();
             }
         });
+    }
+
+    public JPanel getMPanel() {
+        return this.mPanel;
+    }
+
+    public List<SimpleShape> getShapesList() {
+        return this.shapesList;
     }
 
     /**
@@ -277,7 +283,6 @@ public class JDrawingFrame extends JFrame
         for (SimpleShape shape : shapesList) {
             if (((shape.getX() <= startX + 40) && (shape.getX() >= startX - 40))
                     && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
-                System.out.println("trouve !");
                 selectedShape = shape;
                 commandMove = new CommandMove(selectedShape);
                 break;
@@ -319,7 +324,6 @@ public class JDrawingFrame extends JFrame
 
             ((CommandMove) commandMove).setLocation(newX, newY);
             commandMove.execute();
-            // commandList.add(commandMove);
 
             startX = newX;
             startY = newY;

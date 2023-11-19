@@ -1,5 +1,7 @@
-persistenceTest/JsonVisitorTest.class
-persistenceTest/XMLVisitorTest.class
-shapesTest/SquareTest.class
-shapesTest/TriangleTest.class
-shapesTest/CircleTest.class
+persistenceTest\JsonVisitorTest.class
+shapesTest\TriangleTest.class
+shapesTest\SquareTest.class
+commandTest\CommandMoveTest.class
+commandTest\CommandShapeTest.class
+shapesTest\CircleTest.class
+persistenceTest\XMLVisitorTest.class

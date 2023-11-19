@@ -11,9 +11,10 @@ xsi:schemaLocation=
 <version>0.0.1-SNAPSHOT</version>
 <properties>
 <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
-<maven.compiler.source>1.8</maven.compiler.source>
-<maven.compiler.target>1.8</maven.compiler.target>
+<maven.compiler.source>17</maven.compiler.source>
+<maven.compiler.target>17</maven.compiler.target>
 <sonar.host.url>http://im2ag-sonar.u-ga.fr:9000</sonar.host.url>
+<sonar.login>9fa49ab086306abdb23bf1c0127eac3f3d79a2c0</sonar.login>
 </properties>
 <dependencies>
 <dependency>
@@ -63,7 +64,7 @@ xsi:schemaLocation=
 <plugin>
 <groupId>org.jacoco</groupId>
 <artifactId>jacoco-maven-plugin</artifactId>
-<version>0.8.7</version>
+<version>0.8.8</version>
 <executions>
 <execution>
 <goals>
