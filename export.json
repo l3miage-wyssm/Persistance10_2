@@ -1,7 +1,7 @@
 {
 "shapes":[
-{"type":"square","x":43,"y":48}
-{"type":"triangle","x":165,"y":125}
-{"type":"circle","x":74,"y":163}
+{"type":"square","x":27,"y":186},
+{"type":"triangle","x":244,"y":76},
+{"type":"circle","x":131,"y":49}
 ]
 }

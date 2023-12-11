@@ -34,7 +34,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -71,6 +74,10 @@ import edu.uga.miage.m1.polygons.gui.shapes.Triangle;
 
 import java.util.logging.*;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 /**
  * This class represents the main application class, which is a JFrame subclass
  * that manages a toolbar of shapes and a drawing canvas.
@@ -91,14 +98,19 @@ public class JDrawingFrame extends JFrame
     private JPanel mPanel;
     private JLabel mLabel;
     private JButton mExport;
+    private JButton mImport;
     private JButton group;
     private JPopupMenu popupMenuExport;
+    private JPopupMenu popupMenuImport;
     private JMenuItem exportJsonButton;
     private JMenuItem exportXmlButton;
+    private JMenuItem importJsonButton;
     private String groupement = "Grouper";
     private String exportJSON = "Export JSON";
     private String exportXML = "Export XML";
     private String export = "Export";
+    private String importString = "Import";
+    private String importJson = "Import Json";
     private transient List<SimpleShape> shapesList;
     private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
@@ -134,27 +146,30 @@ public class JDrawingFrame extends JFrame
         mPanel.addMouseMotionListener(this);
         mLabel = new JLabel(" ", javax.swing.SwingConstants.LEFT);
         mExport = new JButton(export);
+        mImport = new JButton(importString);
         popupMenuExport = new JPopupMenu();
+        popupMenuImport = new JPopupMenu();
         exportJsonButton = new JMenuItem(exportJSON);
         exportXmlButton = new JMenuItem(exportXML);
+        importJsonButton = new JMenuItem(importJson);
         group = new JButton(groupement);
         group.setActionCommand(groupement);
         exportJsonButton.addActionListener(mReusableActionListener);
         exportXmlButton.addActionListener(mReusableActionListener);
+        importJsonButton.addActionListener(mReusableActionListener);
         shapesList = new ArrayList<>();
         commandList = new ArrayList<>();
-        mExport.setPreferredSize(new Dimension(50000000, 30));
 
         // Action Listener pour main Button export
-        mExport.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                popupMenuExport.show(mExport, 0, mExport.getHeight());
-            }
-        });
+        mExport.addActionListener(e -> popupMenuExport.show(mExport, 0, mExport.getHeight()));
+
+        // Action Listener pour main button import
+        mImport.addActionListener(e -> popupMenuImport.show(mImport, 0, mImport.getHeight()));
 
         // Add to popupMenu
         popupMenuExport.add(exportJsonButton);
         popupMenuExport.add(exportXmlButton);
+        popupMenuImport.add(importJsonButton);
 
         // Fills the panel
         JPanel newPanel = new DrawingPanel();
@@ -164,8 +179,13 @@ public class JDrawingFrame extends JFrame
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.insets = new Insets(0, -100, 0, 0);
+        gbc.insets = new Insets(0, -155, 0, -55);
         newPanel.add(mExport, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        newPanel.add(mImport, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -361,17 +381,8 @@ public class JDrawingFrame extends JFrame
             ((CommandMove) commandMove).setLocation(newX, newY);
             commandMove.execute();
 
-            for (SimpleShape shape : shapesList) {
-                if (((shape.getX() <= startX + 40) && (shape.getX() >= startX - 40))
-                        && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
-                    System.out.println("After move \n X : " + shape.getX() + " Y : " + shape.getY());
-                    break;
-
-                }
-            }
-
-            startX = newX;
-            startY = newY;
+            startX = newX + 25;
+            startY = newY + 25;
         }
 
     }
@@ -419,6 +430,8 @@ public class JDrawingFrame extends JFrame
                     msg.log(Level.WARNING, "Erreur dans l''export JSON", e);
                 }
                 JOptionPane.showMessageDialog(null, "Export Json reussie !");
+            } else if (evt.getActionCommand().equals(importJson)) {
+                actionPerformesImport();
             }
             // Itère sur tous les boutons
             Iterator<Shapes> keys = mButtons.keySet().iterator();
@@ -435,15 +448,81 @@ public class JDrawingFrame extends JFrame
             }
         }
 
+        private void actionPerformesImport() {
+            JFileChooser fileChooser = new JFileChooser();
+
+            int returnValue = fileChooser.showOpenDialog(JDrawingFrame.this);
+
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+
+                String fileName = selectedFile.getName();
+                if (fileName.endsWith(".json")) {
+                    JOptionPane.showMessageDialog(null, "Fichier Jsosn selectionne : " + selectedFile);
+                    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(selectedFile));) {
+                        StringBuilder content = new StringBuilder();
+                        String line;
+                        while ((line = bufferedReader.readLine()) != null) {
+                            content.append(line);
+                        }
+
+                        JSONParser parser = new JSONParser();
+                        Object obj = parser.parse(content.toString());
+                        JSONObject jsonObject = (JSONObject) obj;
+
+                        JSONArray shapesArray = (JSONArray) jsonObject.get("shapes");
+
+                        for (Object shapeObj : shapesArray) {
+                            JSONObject shapeJson = (JSONObject) shapeObj;
+                            String type = (String) shapeJson.get("type");
+                            Long x = (Long) shapeJson.get("x");
+                            Long y = (Long) shapeJson.get("y");
+
+                            createForme(type, x, y);
+
+                        }
+                        mPanel.repaint();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Type de fichier non pris en charge");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Aucun fichier selectione");
+            }
+        }
+
+        private void createForme(String type, Long x, Long y) {
+            if (type.equals("circle")) {
+                Circle circle = new Circle(x.intValue() + 25, y.intValue() + 25);
+                shapesList.add(circle);
+            } else if (type.equals("triangle")) {
+                Triangle triangle = new Triangle(x.intValue() + 25, y.intValue() + 25);
+                shapesList.add(triangle);
+            } else if (type.equals("square")) {
+                Square square = new Square(x.intValue() + 25, y.intValue() + 25);
+                shapesList.add(square);
+            }
+        }
+
         private String exportShapesToJson() {
             JSonVisitor jSonVisitor = new JSonVisitor();
             StringBuilder jsonResult = new StringBuilder();
             jsonResult.append("{\n\"shapes\":[\n");
+            int index = 0;
             for (SimpleShape shape : shapesList) {
                 ((Visitable) shape).accept(jSonVisitor);
 
-                jsonResult.append(jSonVisitor.getRepresentation()).append("\n");
+                jsonResult.append(jSonVisitor.getRepresentation());
+                if (index != shapesList.size() - 1) {
+                    jsonResult.append(",").append("\n");
+                } else {
+                    jsonResult.append("\n");
+                }
                 jSonVisitor.reset();
+                index++;
             }
             jsonResult.append("]\n}");
             return jsonResult.toString();
@@ -455,7 +534,6 @@ public class JDrawingFrame extends JFrame
             xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             xmlResult.append("<root>\n<shapes>\n");
             for (SimpleShape shape : shapesList) {
-                System.out.println("Export Xml" + shape.getX() + " " + shape.getY());
                 ((Visitable) shape).accept(xmlVisitor);
                 xmlResult.append(xmlVisitor.getRepresentation()).append("\n");
                 xmlVisitor.reset();
