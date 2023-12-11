@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="persistenceTest.JsonVisitorTest" time="0.077" tests="5" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="persistenceTest.JsonVisitorTest" time="0.129" tests="5" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="19"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -16,7 +16,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="FR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-19\bin"/>
-    <property name="sun.java.command" value="C:\Users\mcnw2\AppData\Local\Temp\surefire6516176232753892923\surefirebooter11786241297489647383.jar C:\Users\mcnw2\AppData\Local\Temp\surefire6516176232753892923 2023-12-11T09-30-39_056-jvmRun1 surefire4725999700602263061tmp surefire_017107211564401992624tmp"/>
+    <property name="sun.java.command" value="C:\Users\mcnw2\AppData\Local\Temp\surefire12260560669816202505\surefirebooter12290102427438898315.jar C:\Users\mcnw2\AppData\Local\Temp\surefire12260560669816202505 2023-12-11T10-40-27_171-jvmRun1 surefire17143628819507825313tmp surefire_01245818132143340738tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\target\test-classes;C:\Users\mcnw2\OneDrive\Bureau\Cours\2023-2024\SEMESTRE 1\PC\Persistance10_2\target\classes;C:\Users\mcnw2\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.4.0\junit-jupiter-engine-5.4.0.jar;C:\Users\mcnw2\.m2\repository\org\apiguardian\apiguardian-api\1.0.0\apiguardian-api-1.0.0.jar;C:\Users\mcnw2\.m2\repository\org\junit\platform\junit-platform-engine\1.4.0\junit-platform-engine-1.4.0.jar;C:\Users\mcnw2\.m2\repository\org\opentest4j\opentest4j\1.1.1\opentest4j-1.1.1.jar;C:\Users\mcnw2\.m2\repository\org\junit\platform\junit-platform-commons\1.4.0\junit-platform-commons-1.4.0.jar;C:\Users\mcnw2\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.4.0\junit-jupiter-api-5.4.0.jar;C:\Users\mcnw2\.m2\repository\javax\json\javax.json-api\1.1.4\javax.json-api-1.1.4.jar;C:\Users\mcnw2\.m2\repository\org\eclipse\persistence\eclipselink\2.7.4\eclipselink-2.7.4.jar;C:\Users\mcnw2\.m2\repository\org\eclipse\persistence\jakarta.persistence\2.2.2\jakarta.persistence-2.2.2.jar;C:\Users\mcnw2\.m2\repository\org\eclipse\persistence\commonj.sdo\2.1.1\commonj.sdo-2.1.1.jar;C:\Users\mcnw2\.m2\repository\com\fasterxml\jackson\dataformat\jackson-dataformat-xml\2.13.0\jackson-dataformat-xml-2.13.0.jar;C:\Users\mcnw2\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.0\jackson-core-2.13.0.jar;C:\Users\mcnw2\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.0\jackson-annotations-2.13.0.jar;C:\Users\mcnw2\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.0\jackson-databind-2.13.0.jar;C:\Users\mcnw2\.m2\repository\org\codehaus\woodstox\stax2-api\4.2.1\stax2-api-4.2.1.jar;C:\Users\mcnw2\.m2\repository\com\fasterxml\woodstox\woodstox-core\6.2.6\woodstox-core-6.2.6.jar;C:\Users\mcnw2\.m2\repository\org\mockito\mockito-core\5.7.0\mockito-core-5.7.0.jar;C:\Users\mcnw2\.m2\repository\net\bytebuddy\byte-buddy\1.14.9\byte-buddy-1.14.9.jar;C:\Users\mcnw2\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.9\byte-buddy-agent-1.14.9.jar;C:\Users\mcnw2\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\mcnw2\.m2\repository\org\glassfish\javax.json\1.1.4\javax.json-1.1.4.jar;C:\Users\mcnw2\.m2\repository\com\googlecode\json-simple\json-simple\1.1.1\json-simple-1.1.1.jar;C:\Users\mcnw2\.m2\repository\junit\junit\4.10\junit-4.10.jar;C:\Users\mcnw2\.m2\repository\org\hamcrest\hamcrest-core\1.1\hamcrest-core-1.1.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -31,7 +31,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\mcnw2\AppData\Local\Temp\surefire6516176232753892923\surefirebooter11786241297489647383.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\mcnw2\AppData\Local\Temp\surefire12260560669816202505\surefirebooter12290102427438898315.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="19.0.1+10-21"/>
@@ -59,9 +59,9 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="63.0"/>
   </properties>
-  <testcase name="visitTriangleTest" classname="persistenceTest.JsonVisitorTest" time="0.047"/>
-  <testcase name="visitSquareTest" classname="persistenceTest.JsonVisitorTest" time="0"/>
-  <testcase name="getRepresentationTest" classname="persistenceTest.JsonVisitorTest" time="0"/>
+  <testcase name="visitTriangleTest" classname="persistenceTest.JsonVisitorTest" time="0.06"/>
+  <testcase name="visitSquareTest" classname="persistenceTest.JsonVisitorTest" time="0.004"/>
+  <testcase name="getRepresentationTest" classname="persistenceTest.JsonVisitorTest" time="0.002"/>
   <testcase name="visitCircleTest" classname="persistenceTest.JsonVisitorTest" time="0.002"/>
-  <testcase name="resetTest" classname="persistenceTest.JsonVisitorTest" time="0"/>
+  <testcase name="resetTest" classname="persistenceTest.JsonVisitorTest" time="0.003"/>
 </testsuite>

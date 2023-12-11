@@ -111,6 +111,7 @@ public class JDrawingFrame extends JFrame
     private String export = "Export";
     private String importString = "Import";
     private String importJson = "Import Json";
+    private String error = "Error";
     private transient List<SimpleShape> shapesList;
     private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
@@ -272,7 +273,7 @@ public class JDrawingFrame extends JFrame
     }
 
     public void mouseClicked(MouseEvent evt) {
-        Logger msg = Logger.getLogger("Error");
+        Logger msg = Logger.getLogger(error);
         if (mPanel.contains(evt.getX(), evt.getY())
                 && !((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) {
             switch (mSelected) {
@@ -410,7 +411,7 @@ public class JDrawingFrame extends JFrame
     class ShapeActionListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             ((SelecteurActionListener) mSelecteurActionListener).setIsCursedSelected(false);
-            Logger msg = Logger.getLogger("Error");
+            Logger msg = Logger.getLogger(error);
             if (evt.getActionCommand().equals(exportXML)) {
                 File file = new File("export.xml");
                 try (FileWriter fileWriter = new FileWriter(file);) {
@@ -459,6 +460,7 @@ public class JDrawingFrame extends JFrame
                 String fileName = selectedFile.getName();
                 if (fileName.endsWith(".json")) {
                     JOptionPane.showMessageDialog(null, "Fichier Jsosn selectionne : " + selectedFile);
+                    Logger msg = Logger.getLogger(error);
                     try (BufferedReader bufferedReader = new BufferedReader(new FileReader(selectedFile));) {
                         StringBuilder content = new StringBuilder();
                         String line;
@@ -483,7 +485,7 @@ public class JDrawingFrame extends JFrame
                         }
                         mPanel.repaint();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        msg.log(Level.WARNING, "Erreur dans l''import JSON", e);
                     }
 
                 } else {
