@@ -23,7 +23,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -47,7 +50,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.xml.parsers.ParserConfigurationException;
@@ -84,12 +90,15 @@ public class JDrawingFrame extends JFrame
     private Shapes mSelected;
     private JPanel mPanel;
     private JLabel mLabel;
-    private JButton mExportJSON;
-    private JButton mExportXML;
+    private JButton mExport;
     private JButton group;
+    private JPopupMenu popupMenuExport;
+    private JMenuItem exportJsonButton;
+    private JMenuItem exportXmlButton;
     private String groupement = "Grouper";
     private String exportJSON = "Export JSON";
     private String exportXML = "Export XML";
+    private String export = "Export";
     private transient List<SimpleShape> shapesList;
     private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
@@ -124,20 +133,47 @@ public class JDrawingFrame extends JFrame
         mPanel.addMouseListener(this);
         mPanel.addMouseMotionListener(this);
         mLabel = new JLabel(" ", javax.swing.SwingConstants.LEFT);
-        mExportJSON = new JButton(exportJSON);
-        mExportXML = new JButton(exportXML);
+        mExport = new JButton(export);
+        popupMenuExport = new JPopupMenu();
+        exportJsonButton = new JMenuItem(exportJSON);
+        exportXmlButton = new JMenuItem(exportXML);
         group = new JButton(groupement);
-        mExportJSON.setActionCommand(exportJSON);
-        mExportXML.setActionCommand(exportXML);
         group.setActionCommand(groupement);
-        mExportJSON.addActionListener(mReusableActionListener);
-        mExportXML.addActionListener(mReusableActionListener);
+        exportJsonButton.addActionListener(mReusableActionListener);
+        exportXmlButton.addActionListener(mReusableActionListener);
         shapesList = new ArrayList<>();
         commandList = new ArrayList<>();
+        mExport.setPreferredSize(new Dimension(50000000, 30));
+
+        // Action Listener pour main Button export
+        mExport.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                popupMenuExport.show(mExport, 0, mExport.getHeight());
+            }
+        });
+
+        // Add to popupMenu
+        popupMenuExport.add(exportJsonButton);
+        popupMenuExport.add(exportXmlButton);
 
         // Fills the panel
+        JPanel newPanel = new DrawingPanel();
+        newPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.insets = new Insets(0, -100, 0, 0);
+        newPanel.add(mExport, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        newPanel.add(mToolbar, gbc);
+
         setLayout(new BorderLayout());
-        add(mToolbar, BorderLayout.NORTH);
+        add(newPanel, BorderLayout.NORTH);
         add(mPanel, BorderLayout.CENTER);
         add(mLabel, BorderLayout.SOUTH);
 
@@ -146,8 +182,6 @@ public class JDrawingFrame extends JFrame
         addShape(Shapes.TRIANGLE, new ImageIcon(getClass().getResource("images/triangle.png")));
         addShape(Shapes.CIRCLE, new ImageIcon(getClass().getResource("images/circle.png")));
         addSelecteur(new ImageIcon(getClass().getResource("images/le-curseur.png")));
-        mToolbar.add(exportJSON, mExportJSON);
-        mToolbar.add(exportXML, mExportXML);
 
         setPreferredSize(new Dimension(400, 400));
 
@@ -160,9 +194,11 @@ public class JDrawingFrame extends JFrame
         actionMap.put("commandList.get(commandList.size() - 1).undo()", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                commandList.get(commandList.size() - 1).undo();
-                commandList.remove(commandList.size() - 1);
-                mPanel.repaint();
+                if (!commandList.isEmpty()) {
+                    commandList.get(commandList.size() - 1).undo();
+                    commandList.remove(commandList.size() - 1);
+                    mPanel.repaint();
+                }
             }
         });
     }
@@ -325,6 +361,15 @@ public class JDrawingFrame extends JFrame
             ((CommandMove) commandMove).setLocation(newX, newY);
             commandMove.execute();
 
+            for (SimpleShape shape : shapesList) {
+                if (((shape.getX() <= startX + 40) && (shape.getX() >= startX - 40))
+                        && ((shape.getY() <= startY + 30) && (shape.getY() >= startY - 30))) {
+                    System.out.println("After move \n X : " + shape.getX() + " Y : " + shape.getY());
+                    break;
+
+                }
+            }
+
             startX = newX;
             startY = newY;
         }
@@ -363,6 +408,7 @@ public class JDrawingFrame extends JFrame
                 } catch (IOException | ParserConfigurationException e) {
                     msg.log(Level.WARNING, "erreur dans l''export xml", e);
                 }
+                JOptionPane.showMessageDialog(null, "Export Xml reussie !");
             } else if (evt.getActionCommand().equals(exportJSON)) {
 
                 File file = new File("export.json");
@@ -372,6 +418,7 @@ public class JDrawingFrame extends JFrame
                 } catch (IOException e) {
                     msg.log(Level.WARNING, "Erreur dans l''export JSON", e);
                 }
+                JOptionPane.showMessageDialog(null, "Export Json reussie !");
             }
             // Itère sur tous les boutons
             Iterator<Shapes> keys = mButtons.keySet().iterator();
@@ -408,6 +455,7 @@ public class JDrawingFrame extends JFrame
             xmlResult.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             xmlResult.append("<root>\n<shapes>\n");
             for (SimpleShape shape : shapesList) {
+                System.out.println("Export Xml" + shape.getX() + " " + shape.getY());
                 ((Visitable) shape).accept(xmlVisitor);
                 xmlResult.append(xmlVisitor.getRepresentation()).append("\n");
                 xmlVisitor.reset();
