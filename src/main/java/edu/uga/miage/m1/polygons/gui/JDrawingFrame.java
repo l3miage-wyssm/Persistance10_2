@@ -34,11 +34,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -50,11 +45,9 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -64,6 +57,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import edu.uga.miage.m1.polygons.gui.command.Command;
 import edu.uga.miage.m1.polygons.gui.command.CommandMove;
 import edu.uga.miage.m1.polygons.gui.command.CommandShape;
+import edu.uga.miage.m1.polygons.gui.exportImport.Export;
+import edu.uga.miage.m1.polygons.gui.exportImport.Import;
+import edu.uga.miage.m1.polygons.gui.exportImport.ShapeObject;
 import edu.uga.miage.m1.polygons.gui.persistence.JSonVisitor;
 import edu.uga.miage.m1.polygons.gui.persistence.Visitable;
 import edu.uga.miage.m1.polygons.gui.persistence.XMLVisitor;
@@ -73,10 +69,6 @@ import edu.uga.miage.m1.polygons.gui.shapes.Square;
 import edu.uga.miage.m1.polygons.gui.shapes.Triangle;
 
 import java.util.logging.*;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 /**
  * This class represents the main application class, which is a JFrame subclass
@@ -116,7 +108,7 @@ public class JDrawingFrame extends JFrame
     private transient List<Command> commandList;
     private transient ActionListener mReusableActionListener = new ShapeActionListener();
     private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();
-
+    private JDrawingFrame frame = this;
     private int startX;
     private int startY;
 
@@ -219,9 +211,16 @@ public class JDrawingFrame extends JFrame
                     commandList.get(commandList.size() - 1).undo();
                     commandList.remove(commandList.size() - 1);
                     mPanel.repaint();
+                } else {
+                    removeImport();
                 }
             }
         });
+    }
+
+    public void removeImport() {
+        shapesList.clear();
+        mPanel.repaint();
     }
 
     public JPanel getMPanel() {
@@ -411,28 +410,33 @@ public class JDrawingFrame extends JFrame
     class ShapeActionListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             ((SelecteurActionListener) mSelecteurActionListener).setIsCursedSelected(false);
-            Logger msg = Logger.getLogger(error);
+            Logger msg = Logger.getLogger("Error");
+            Export exporter = new Export();
             if (evt.getActionCommand().equals(exportXML)) {
-                File file = new File("export.xml");
-                try (FileWriter fileWriter = new FileWriter(file);) {
-                    String xmlShapes = exportShapesToXml();
-                    fileWriter.write(xmlShapes);
-                } catch (IOException | ParserConfigurationException e) {
+                String xmlShapes;
+                try {
+                    xmlShapes = exportShapesToXml();
+                    exporter.actionPerformedExport(evt, xmlShapes);
+                } catch (ParserConfigurationException e) {
                     msg.log(Level.WARNING, "erreur dans l''export xml", e);
                 }
-                JOptionPane.showMessageDialog(null, "Export Xml reussie !");
-            } else if (evt.getActionCommand().equals(exportJSON)) {
 
-                File file = new File("export.json");
-                try (FileWriter fileWriter = new FileWriter(file);) {
-                    String jsonShapes = exportShapesToJson();
-                    fileWriter.write(jsonShapes);
-                } catch (IOException e) {
+            } else if (evt.getActionCommand().equals(exportJSON)) {
+                String jsonShapes;
+                try {
+                    jsonShapes = exportShapesToJson();
+                    exporter.actionPerformedExport(evt, jsonShapes);
+                } catch (Exception e) {
                     msg.log(Level.WARNING, "Erreur dans l''export JSON", e);
                 }
-                JOptionPane.showMessageDialog(null, "Export Json reussie !");
             } else if (evt.getActionCommand().equals(importJson)) {
-                actionPerformesImport();
+                Import importer = new Import();
+                List<ShapeObject> shapesObjectList;
+                shapesObjectList = importer.actionPerformesImport(frame);
+                for (ShapeObject shapeObj : shapesObjectList) {
+                    createForme(shapeObj.getType(), shapeObj.getX(), shapeObj.getY());
+                }
+                mPanel.repaint();
             }
             // Itère sur tous les boutons
             Iterator<Shapes> keys = mButtons.keySet().iterator();
@@ -446,53 +450,6 @@ public class JDrawingFrame extends JFrame
                     btn.setBorderPainted(false);
                 }
                 btn.repaint();
-            }
-        }
-
-        private void actionPerformesImport() {
-            JFileChooser fileChooser = new JFileChooser();
-
-            int returnValue = fileChooser.showOpenDialog(JDrawingFrame.this);
-
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-
-                String fileName = selectedFile.getName();
-                if (fileName.endsWith(".json")) {
-                    JOptionPane.showMessageDialog(null, "Fichier Jsosn selectionne : " + selectedFile);
-                    Logger msg = Logger.getLogger(error);
-                    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(selectedFile));) {
-                        StringBuilder content = new StringBuilder();
-                        String line;
-                        while ((line = bufferedReader.readLine()) != null) {
-                            content.append(line);
-                        }
-
-                        JSONParser parser = new JSONParser();
-                        Object obj = parser.parse(content.toString());
-                        JSONObject jsonObject = (JSONObject) obj;
-
-                        JSONArray shapesArray = (JSONArray) jsonObject.get("shapes");
-
-                        for (Object shapeObj : shapesArray) {
-                            JSONObject shapeJson = (JSONObject) shapeObj;
-                            String type = (String) shapeJson.get("type");
-                            Long x = (Long) shapeJson.get("x");
-                            Long y = (Long) shapeJson.get("y");
-
-                            createForme(type, x, y);
-
-                        }
-                        mPanel.repaint();
-                    } catch (Exception e) {
-                        msg.log(Level.WARNING, "Erreur dans l''import JSON", e);
-                    }
-
-                } else {
-                    JOptionPane.showMessageDialog(null, "Type de fichier non pris en charge");
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Aucun fichier selectione");
             }
         }
 

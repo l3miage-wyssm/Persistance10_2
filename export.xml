@@ -2,9 +2,19 @@
 <root>
 <shapes>
 <shape>
-<type>circle</type>
-<x>265</x>
-<y>121</y>
+    <type>square</type>
+    <x>22</x>
+    <y>37</y>
+</shape>
+<shape>
+    <type>square</type>
+    <x>141</x>
+    <y>148</y>
+</shape>
+<shape>
+    <type>square</type>
+    <x>226</x>
+    <y>45</y>
 </shape>
 </shapes>
 </root>
