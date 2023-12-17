@@ -23,7 +23,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -31,7 +34,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,9 +50,13 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,6 +64,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import edu.uga.miage.m1.polygons.gui.command.Command;
 import edu.uga.miage.m1.polygons.gui.command.CommandMove;
 import edu.uga.miage.m1.polygons.gui.command.CommandShape;
+import edu.uga.miage.m1.polygons.gui.exportImport.Export;
+import edu.uga.miage.m1.polygons.gui.exportImport.Import;
+import edu.uga.miage.m1.polygons.gui.exportImport.ShapeObject;
 import edu.uga.miage.m1.polygons.gui.persistence.JSonVisitor;
 import edu.uga.miage.m1.polygons.gui.persistence.Visitable;
 import edu.uga.miage.m1.polygons.gui.persistence.XMLVisitor;
@@ -64,6 +76,10 @@ import edu.uga.miage.m1.polygons.gui.shapes.Square;
 import edu.uga.miage.m1.polygons.gui.shapes.Triangle;
 
 import java.util.logging.*;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * This class represents the main application class, which is a JFrame subclass
@@ -75,8 +91,8 @@ import java.util.logging.*;
  */
 public class JDrawingFrame extends JFrame
         implements MouseListener, MouseMotionListener {
-<span class="fc" id="L78">    private enum Shapes {</span>
-<span class="fc" id="L79">        SQUARE, TRIANGLE, CIRCLE</span>
+<span class="fc" id="L94">    private enum Shapes {</span>
+<span class="fc" id="L95">        SQUARE, TRIANGLE, CIRCLE</span>
     }
 
     private static final long serialVersionUID = 1L;
@@ -84,28 +100,37 @@ public class JDrawingFrame extends JFrame
     private Shapes mSelected;
     private JPanel mPanel;
     private JLabel mLabel;
-    private JButton mExportJSON;
-    private JButton mExportXML;
+    private JButton mExport;
+    private JButton mImport;
     private JButton group;
-<span class="fc" id="L90">    private String groupement = &quot;Grouper&quot;;</span>
-<span class="fc" id="L91">    private String exportJSON = &quot;Export JSON&quot;;</span>
-<span class="fc" id="L92">    private String exportXML = &quot;Export XML&quot;;</span>
+    private JPopupMenu popupMenuExport;
+    private JPopupMenu popupMenuImport;
+    private JMenuItem exportJsonButton;
+    private JMenuItem exportXmlButton;
+    private JMenuItem importJsonButton;
+<span class="fc" id="L111">    private String groupement = &quot;Grouper&quot;;</span>
+<span class="fc" id="L112">    private String exportJSON = &quot;Export JSON&quot;;</span>
+<span class="fc" id="L113">    private String exportXML = &quot;Export XML&quot;;</span>
+<span class="fc" id="L114">    private String export = &quot;Export&quot;;</span>
+<span class="fc" id="L115">    private String importString = &quot;Import&quot;;</span>
+<span class="fc" id="L116">    private String importJson = &quot;Import Json&quot;;</span>
+<span class="fc" id="L117">    private String error = &quot;Error&quot;;</span>
     private transient List&lt;SimpleShape&gt; shapesList;
     private transient List&lt;Command&gt; commandList;
-<span class="fc" id="L95">    private transient ActionListener mReusableActionListener = new ShapeActionListener();</span>
-<span class="fc" id="L96">    private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();</span>
-
+<span class="fc" id="L120">    private transient ActionListener mReusableActionListener = new ShapeActionListener();</span>
+<span class="fc" id="L121">    private transient ActionListener mSelecteurActionListener = new SelecteurActionListener();</span>
+<span class="fc" id="L122">    private JDrawingFrame frame = this;</span>
     private int startX;
     private int startY;
 
     private transient Command commandMove;
 
-<span class="fc" id="L103">    private transient SimpleShape selectedShape = null;</span>
+<span class="fc" id="L128">    private transient SimpleShape selectedShape = null;</span>
 
     /**
      * Tracks buttons to manage the background.
      */
-<span class="fc" id="L108">    private EnumMap&lt;Shapes, JButton&gt; mButtons = new EnumMap&lt;&gt;(Shapes.class);</span>
+<span class="fc" id="L133">    private EnumMap&lt;Shapes, JButton&gt; mButtons = new EnumMap&lt;&gt;(Shapes.class);</span>
 
     /**
      * Default constructor that populates the main window.
@@ -113,66 +138,101 @@ public class JDrawingFrame extends JFrame
      * @param frameName
      **/
     public JDrawingFrame(String frameName) {
-<span class="fc" id="L116">        super(frameName);</span>
+<span class="fc" id="L141">        super(frameName);</span>
 
         // Instantiates components
-<span class="fc" id="L119">        mToolbar = new JToolBar(&quot;Toolbar&quot;);</span>
-<span class="fc" id="L120">        mPanel = new DrawingPanel();</span>
-<span class="fc" id="L121">        mPanel.setBackground(Color.WHITE);</span>
-<span class="fc" id="L122">        mPanel.setLayout(null);</span>
-<span class="fc" id="L123">        mPanel.setMinimumSize(new Dimension(400, 400));</span>
-<span class="fc" id="L124">        mPanel.addMouseListener(this);</span>
-<span class="fc" id="L125">        mPanel.addMouseMotionListener(this);</span>
-<span class="fc" id="L126">        mLabel = new JLabel(&quot; &quot;, javax.swing.SwingConstants.LEFT);</span>
-<span class="fc" id="L127">        mExportJSON = new JButton(exportJSON);</span>
-<span class="fc" id="L128">        mExportXML = new JButton(exportXML);</span>
-<span class="fc" id="L129">        group = new JButton(groupement);</span>
-<span class="fc" id="L130">        mExportJSON.setActionCommand(exportJSON);</span>
-<span class="fc" id="L131">        mExportXML.setActionCommand(exportXML);</span>
-<span class="fc" id="L132">        group.setActionCommand(groupement);</span>
-<span class="fc" id="L133">        mExportJSON.addActionListener(mReusableActionListener);</span>
-<span class="fc" id="L134">        mExportXML.addActionListener(mReusableActionListener);</span>
-<span class="fc" id="L135">        shapesList = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L136">        commandList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L144">        mToolbar = new JToolBar(&quot;Toolbar&quot;);</span>
+<span class="fc" id="L145">        mPanel = new DrawingPanel();</span>
+<span class="fc" id="L146">        mPanel.setBackground(Color.WHITE);</span>
+<span class="fc" id="L147">        mPanel.setLayout(null);</span>
+<span class="fc" id="L148">        mPanel.setMinimumSize(new Dimension(400, 400));</span>
+<span class="fc" id="L149">        mPanel.addMouseListener(this);</span>
+<span class="fc" id="L150">        mPanel.addMouseMotionListener(this);</span>
+<span class="fc" id="L151">        mLabel = new JLabel(&quot; &quot;, javax.swing.SwingConstants.LEFT);</span>
+<span class="fc" id="L152">        mExport = new JButton(export);</span>
+<span class="fc" id="L153">        mImport = new JButton(importString);</span>
+<span class="fc" id="L154">        popupMenuExport = new JPopupMenu();</span>
+<span class="fc" id="L155">        popupMenuImport = new JPopupMenu();</span>
+<span class="fc" id="L156">        exportJsonButton = new JMenuItem(exportJSON);</span>
+<span class="fc" id="L157">        exportXmlButton = new JMenuItem(exportXML);</span>
+<span class="fc" id="L158">        importJsonButton = new JMenuItem(importJson);</span>
+<span class="fc" id="L159">        group = new JButton(groupement);</span>
+<span class="fc" id="L160">        group.setActionCommand(groupement);</span>
+<span class="fc" id="L161">        exportJsonButton.addActionListener(mReusableActionListener);</span>
+<span class="fc" id="L162">        exportXmlButton.addActionListener(mReusableActionListener);</span>
+<span class="fc" id="L163">        importJsonButton.addActionListener(mReusableActionListener);</span>
+<span class="fc" id="L164">        shapesList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L165">        commandList = new ArrayList&lt;&gt;();</span>
+
+        // Action Listener pour main Button export
+<span class="pc" id="L168">        mExport.addActionListener(e -&gt; popupMenuExport.show(mExport, 0, mExport.getHeight()));</span>
+
+        // Action Listener pour main button import
+<span class="pc" id="L171">        mImport.addActionListener(e -&gt; popupMenuImport.show(mImport, 0, mImport.getHeight()));</span>
+
+        // Add to popupMenu
+<span class="fc" id="L174">        popupMenuExport.add(exportJsonButton);</span>
+<span class="fc" id="L175">        popupMenuExport.add(exportXmlButton);</span>
+<span class="fc" id="L176">        popupMenuImport.add(importJsonButton);</span>
 
         // Fills the panel
-<span class="fc" id="L139">        setLayout(new BorderLayout());</span>
-<span class="fc" id="L140">        add(mToolbar, BorderLayout.NORTH);</span>
-<span class="fc" id="L141">        add(mPanel, BorderLayout.CENTER);</span>
-<span class="fc" id="L142">        add(mLabel, BorderLayout.SOUTH);</span>
+<span class="fc" id="L179">        JPanel newPanel = new DrawingPanel();</span>
+<span class="fc" id="L180">        newPanel.setLayout(new GridBagLayout());</span>
+<span class="fc" id="L181">        GridBagConstraints gbc = new GridBagConstraints();</span>
+
+<span class="fc" id="L183">        gbc.gridx = 0;</span>
+<span class="fc" id="L184">        gbc.gridy = 0;</span>
+<span class="fc" id="L185">        gbc.anchor = GridBagConstraints.NORTHWEST;</span>
+<span class="fc" id="L186">        gbc.insets = new Insets(0, -155, 0, -55);</span>
+<span class="fc" id="L187">        newPanel.add(mExport, gbc);</span>
+
+<span class="fc" id="L189">        gbc.gridx = 1;</span>
+<span class="fc" id="L190">        gbc.gridy = 0;</span>
+<span class="fc" id="L191">        gbc.anchor = GridBagConstraints.NORTHWEST;</span>
+<span class="fc" id="L192">        newPanel.add(mImport, gbc);</span>
+
+<span class="fc" id="L194">        gbc.gridx = 0;</span>
+<span class="fc" id="L195">        gbc.gridy = 1;</span>
+<span class="fc" id="L196">        gbc.anchor = GridBagConstraints.NORTHWEST;</span>
+<span class="fc" id="L197">        newPanel.add(mToolbar, gbc);</span>
+
+<span class="fc" id="L199">        setLayout(new BorderLayout());</span>
+<span class="fc" id="L200">        add(newPanel, BorderLayout.NORTH);</span>
+<span class="fc" id="L201">        add(mPanel, BorderLayout.CENTER);</span>
+<span class="fc" id="L202">        add(mLabel, BorderLayout.SOUTH);</span>
 
         // Add shapes in the menu
-<span class="fc" id="L145">        addShape(Shapes.SQUARE, new ImageIcon(getClass().getResource(&quot;images/square.png&quot;)));</span>
-<span class="fc" id="L146">        addShape(Shapes.TRIANGLE, new ImageIcon(getClass().getResource(&quot;images/triangle.png&quot;)));</span>
-<span class="fc" id="L147">        addShape(Shapes.CIRCLE, new ImageIcon(getClass().getResource(&quot;images/circle.png&quot;)));</span>
-<span class="fc" id="L148">        addSelecteur(new ImageIcon(getClass().getResource(&quot;images/le-curseur.png&quot;)));</span>
-<span class="fc" id="L149">        mToolbar.add(exportJSON, mExportJSON);</span>
-<span class="fc" id="L150">        mToolbar.add(exportXML, mExportXML);</span>
+<span class="fc" id="L205">        addShape(Shapes.SQUARE, new ImageIcon(getClass().getResource(&quot;images/square.png&quot;)));</span>
+<span class="fc" id="L206">        addShape(Shapes.TRIANGLE, new ImageIcon(getClass().getResource(&quot;images/triangle.png&quot;)));</span>
+<span class="fc" id="L207">        addShape(Shapes.CIRCLE, new ImageIcon(getClass().getResource(&quot;images/circle.png&quot;)));</span>
+<span class="fc" id="L208">        addSelecteur(new ImageIcon(getClass().getResource(&quot;images/le-curseur.png&quot;)));</span>
 
-<span class="fc" id="L152">        setPreferredSize(new Dimension(400, 400));</span>
+<span class="fc" id="L210">        setPreferredSize(new Dimension(400, 400));</span>
 
         // Ajoute un gestionnaire d'evenements de clavier pur &quot;Ctr-Z&quot;
-<span class="fc" id="L155">        InputMap inputMap = mPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);</span>
-<span class="fc" id="L156">        ActionMap actionMap = mPanel.getActionMap();</span>
+<span class="fc" id="L213">        InputMap inputMap = mPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);</span>
+<span class="fc" id="L214">        ActionMap actionMap = mPanel.getActionMap();</span>
 
-<span class="fc" id="L158">        KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK);</span>
-<span class="fc" id="L159">        inputMap.put(ctrlZ, &quot;commandList.get(commandList.size() - 1).undo()&quot;);</span>
-<span class="fc" id="L160">        actionMap.put(&quot;commandList.get(commandList.size() - 1).undo()&quot;, new AbstractAction() {</span>
+<span class="fc" id="L216">        KeyStroke ctrlZ = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK);</span>
+<span class="fc" id="L217">        inputMap.put(ctrlZ, &quot;commandList.get(commandList.size() - 1).undo()&quot;);</span>
+<span class="fc" id="L218">        actionMap.put(&quot;commandList.get(commandList.size() - 1).undo()&quot;, new AbstractAction() {</span>
             @Override
             public void actionPerformed(ActionEvent e) {
-<span class="nc" id="L163">                commandList.get(commandList.size() - 1).undo();</span>
-<span class="nc" id="L164">                commandList.remove(commandList.size() - 1);</span>
-<span class="nc" id="L165">                mPanel.repaint();</span>
-<span class="nc" id="L166">            }</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                if (!commandList.isEmpty()) {</span>
+<span class="nc" id="L222">                    commandList.get(commandList.size() - 1).undo();</span>
+<span class="nc" id="L223">                    commandList.remove(commandList.size() - 1);</span>
+<span class="nc" id="L224">                    mPanel.repaint();</span>
+                }
+<span class="nc" id="L226">            }</span>
         });
-<span class="fc" id="L168">    }</span>
+<span class="fc" id="L228">    }</span>
 
     public JPanel getMPanel() {
-<span class="nc" id="L171">        return this.mPanel;</span>
+<span class="nc" id="L231">        return this.mPanel;</span>
     }
 
     public List&lt;SimpleShape&gt; getShapesList() {
-<span class="fc" id="L175">        return this.shapesList;</span>
+<span class="fc" id="L235">        return this.shapesList;</span>
     }
 
     /**
@@ -182,71 +242,71 @@ public class JDrawingFrame extends JFrame
      * @param icon The icon associated with the injected &lt;tt&gt;SimpleShape&lt;/tt&gt;.
      **/
     private void addShape(Shapes shape, ImageIcon icon) {
-<span class="fc" id="L185">        JButton button = new JButton(icon);</span>
-<span class="fc" id="L186">        button.setBorderPainted(false);</span>
-<span class="fc" id="L187">        mButtons.put(shape, button);</span>
-<span class="fc" id="L188">        button.setActionCommand(shape.toString());</span>
-<span class="fc" id="L189">        button.addActionListener(mReusableActionListener);</span>
+<span class="fc" id="L245">        JButton button = new JButton(icon);</span>
+<span class="fc" id="L246">        button.setBorderPainted(false);</span>
+<span class="fc" id="L247">        mButtons.put(shape, button);</span>
+<span class="fc" id="L248">        button.setActionCommand(shape.toString());</span>
+<span class="fc" id="L249">        button.addActionListener(mReusableActionListener);</span>
 
-<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (mSelected == null) {</span>
-<span class="fc" id="L192">            button.doClick();</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">        if (mSelected == null) {</span>
+<span class="fc" id="L252">            button.doClick();</span>
         }
 
-<span class="fc" id="L195">        mToolbar.add(button);</span>
-<span class="fc" id="L196">        mToolbar.validate();</span>
-<span class="fc" id="L197">        repaint();</span>
-<span class="fc" id="L198">    }</span>
+<span class="fc" id="L255">        mToolbar.add(button);</span>
+<span class="fc" id="L256">        mToolbar.validate();</span>
+<span class="fc" id="L257">        repaint();</span>
+<span class="fc" id="L258">    }</span>
 
     private void addSelecteur(ImageIcon icon) {
-<span class="fc" id="L201">        Image image = icon.getImage();</span>
-<span class="fc" id="L202">        Image newImg = image.getScaledInstance(53, 53, Image.SCALE_SMOOTH);</span>
-<span class="fc" id="L203">        icon = new ImageIcon(newImg);</span>
-<span class="fc" id="L204">        JButton button = new JButton(icon);</span>
-<span class="fc" id="L205">        button.setBorderPainted(false);</span>
-<span class="fc" id="L206">        button.setActionCommand(&quot;curseur&quot;);</span>
-<span class="fc" id="L207">        button.addActionListener(mSelecteurActionListener);</span>
+<span class="fc" id="L261">        Image image = icon.getImage();</span>
+<span class="fc" id="L262">        Image newImg = image.getScaledInstance(53, 53, Image.SCALE_SMOOTH);</span>
+<span class="fc" id="L263">        icon = new ImageIcon(newImg);</span>
+<span class="fc" id="L264">        JButton button = new JButton(icon);</span>
+<span class="fc" id="L265">        button.setBorderPainted(false);</span>
+<span class="fc" id="L266">        button.setActionCommand(&quot;curseur&quot;);</span>
+<span class="fc" id="L267">        button.addActionListener(mSelecteurActionListener);</span>
 
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        if (mSelected == null) {</span>
-<span class="nc" id="L210">            button.doClick();</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (mSelected == null) {</span>
+<span class="nc" id="L270">            button.doClick();</span>
         }
 
-<span class="fc" id="L213">        mToolbar.add(button);</span>
-<span class="fc" id="L214">        mToolbar.validate();</span>
-<span class="fc" id="L215">        repaint();</span>
-<span class="fc" id="L216">    }</span>
+<span class="fc" id="L273">        mToolbar.add(button);</span>
+<span class="fc" id="L274">        mToolbar.validate();</span>
+<span class="fc" id="L275">        repaint();</span>
+<span class="fc" id="L276">    }</span>
 
     public void mouseClicked(MouseEvent evt) {
-<span class="nc" id="L219">        Logger msg = Logger.getLogger(&quot;Error&quot;);</span>
-<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (mPanel.contains(evt.getX(), evt.getY())</span>
-<span class="nc bnc" id="L221" title="All 2 branches missed.">                &amp;&amp; !((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) {</span>
-<span class="nc bnc" id="L222" title="All 4 branches missed.">            switch (mSelected) {</span>
+<span class="nc" id="L279">        Logger msg = Logger.getLogger(error);</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (mPanel.contains(evt.getX(), evt.getY())</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                &amp;&amp; !((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) {</span>
+<span class="nc bnc" id="L282" title="All 4 branches missed.">            switch (mSelected) {</span>
                 case CIRCLE:
-<span class="nc" id="L224">                    Circle circle = new Circle(evt.getX(), evt.getY());</span>
-<span class="nc" id="L225">                    shapesList.add(circle);</span>
-<span class="nc" id="L226">                    Command commandCircle = new CommandShape(circle, this);</span>
-<span class="nc" id="L227">                    commandCircle.execute();</span>
-<span class="nc" id="L228">                    commandList.add(commandCircle);</span>
-<span class="nc" id="L229">                    break;</span>
+<span class="nc" id="L284">                    Circle circle = new Circle(evt.getX(), evt.getY());</span>
+<span class="nc" id="L285">                    shapesList.add(circle);</span>
+<span class="nc" id="L286">                    Command commandCircle = new CommandShape(circle, this);</span>
+<span class="nc" id="L287">                    commandCircle.execute();</span>
+<span class="nc" id="L288">                    commandList.add(commandCircle);</span>
+<span class="nc" id="L289">                    break;</span>
                 case TRIANGLE:
-<span class="nc" id="L231">                    Triangle triangle = new Triangle(evt.getX(), evt.getY());</span>
-<span class="nc" id="L232">                    shapesList.add(triangle);</span>
-<span class="nc" id="L233">                    Command commandTriangle = new CommandShape(triangle, this);</span>
-<span class="nc" id="L234">                    commandTriangle.execute();</span>
-<span class="nc" id="L235">                    commandList.add(commandTriangle);</span>
-<span class="nc" id="L236">                    break;</span>
+<span class="nc" id="L291">                    Triangle triangle = new Triangle(evt.getX(), evt.getY());</span>
+<span class="nc" id="L292">                    shapesList.add(triangle);</span>
+<span class="nc" id="L293">                    Command commandTriangle = new CommandShape(triangle, this);</span>
+<span class="nc" id="L294">                    commandTriangle.execute();</span>
+<span class="nc" id="L295">                    commandList.add(commandTriangle);</span>
+<span class="nc" id="L296">                    break;</span>
                 case SQUARE:
-<span class="nc" id="L238">                    Square square = new Square(evt.getX(), evt.getY());</span>
-<span class="nc" id="L239">                    shapesList.add(square);</span>
-<span class="nc" id="L240">                    Command commandSquare = new CommandShape(square, this);</span>
-<span class="nc" id="L241">                    commandSquare.execute();</span>
-<span class="nc" id="L242">                    commandList.add(commandSquare);</span>
-<span class="nc" id="L243">                    break;</span>
+<span class="nc" id="L298">                    Square square = new Square(evt.getX(), evt.getY());</span>
+<span class="nc" id="L299">                    shapesList.add(square);</span>
+<span class="nc" id="L300">                    Command commandSquare = new CommandShape(square, this);</span>
+<span class="nc" id="L301">                    commandSquare.execute();</span>
+<span class="nc" id="L302">                    commandList.add(commandSquare);</span>
+<span class="nc" id="L303">                    break;</span>
                 default:
-<span class="nc" id="L245">                    msg.log(Level.INFO, &quot;No shape named {0}&quot;, mSelected);</span>
+<span class="nc" id="L305">                    msg.log(Level.INFO, &quot;No shape named {0}&quot;, mSelected);</span>
 
             }
         }
-<span class="nc" id="L249">    }</span>
+<span class="nc" id="L309">    }</span>
 
     /**
      * Implements an empty method for the &lt;tt&gt;MouseListener&lt;/tt&gt; interface.
@@ -258,7 +318,7 @@ public class JDrawingFrame extends JFrame
         // action
         // when the mouse enters the component. If functionality is needed, it should be
         // implemented here.
-<span class="nc" id="L261">    }</span>
+<span class="nc" id="L321">    }</span>
 
     /**
      * Implements an empty method for the &lt;tt&gt;MouseListener&lt;/tt&gt; interface.
@@ -266,9 +326,9 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mouseExited(MouseEvent evt) {
-<span class="nc" id="L269">        mLabel.setText(&quot; &quot;);</span>
-<span class="nc" id="L270">        mLabel.repaint();</span>
-<span class="nc" id="L271">    }</span>
+<span class="nc" id="L329">        mLabel.setText(&quot; &quot;);</span>
+<span class="nc" id="L330">        mLabel.repaint();</span>
+<span class="nc" id="L331">    }</span>
 
     /**
      * Implements method for the &lt;tt&gt;MouseListener&lt;/tt&gt; interface to initiate
@@ -277,20 +337,20 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mousePressed(MouseEvent evt) {
-<span class="nc" id="L280">        startX = evt.getX();</span>
-<span class="nc" id="L281">        startY = evt.getY();</span>
+<span class="nc" id="L340">        startX = evt.getX();</span>
+<span class="nc" id="L341">        startY = evt.getY();</span>
 
-<span class="nc bnc" id="L283" title="All 2 branches missed.">        for (SimpleShape shape : shapesList) {</span>
-<span class="nc bnc" id="L284" title="All 4 branches missed.">            if (((shape.getX() &lt;= startX + 40) &amp;&amp; (shape.getX() &gt;= startX - 40))</span>
-<span class="nc bnc" id="L285" title="All 4 branches missed.">                    &amp;&amp; ((shape.getY() &lt;= startY + 30) &amp;&amp; (shape.getY() &gt;= startY - 30))) {</span>
-<span class="nc" id="L286">                selectedShape = shape;</span>
-<span class="nc" id="L287">                commandMove = new CommandMove(selectedShape);</span>
-<span class="nc" id="L288">                break;</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        for (SimpleShape shape : shapesList) {</span>
+<span class="nc bnc" id="L344" title="All 4 branches missed.">            if (((shape.getX() &lt;= startX + 40) &amp;&amp; (shape.getX() &gt;= startX - 40))</span>
+<span class="nc bnc" id="L345" title="All 4 branches missed.">                    &amp;&amp; ((shape.getY() &lt;= startY + 30) &amp;&amp; (shape.getY() &gt;= startY - 30))) {</span>
+<span class="nc" id="L346">                selectedShape = shape;</span>
+<span class="nc" id="L347">                commandMove = new CommandMove(selectedShape);</span>
+<span class="nc" id="L348">                break;</span>
 
             }
-<span class="nc" id="L291">        }</span>
+<span class="nc" id="L351">        }</span>
 
-<span class="nc" id="L293">    }</span>
+<span class="nc" id="L353">    }</span>
 
     /**
      * Implements method for the &lt;tt&gt;MouseListener&lt;/tt&gt; interface to complete
@@ -299,15 +359,15 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mouseReleased(MouseEvent evt) {
-<span class="nc" id="L302">        Graphics2D g = (Graphics2D) mPanel.getGraphics();</span>
-<span class="nc" id="L303">        g.setColor(Color.WHITE);</span>
-<span class="nc" id="L304">        g.fillRect(0, 0, mPanel.getWidth(), mPanel.getHeight());</span>
-<span class="nc" id="L305">        shapesList.forEach(shape -&gt; shape.draw(g));</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">        if (selectedShape != null) {</span>
-<span class="nc" id="L307">            commandList.add(commandMove);</span>
+<span class="nc" id="L362">        Graphics2D g = (Graphics2D) mPanel.getGraphics();</span>
+<span class="nc" id="L363">        g.setColor(Color.WHITE);</span>
+<span class="nc" id="L364">        g.fillRect(0, 0, mPanel.getWidth(), mPanel.getHeight());</span>
+<span class="nc" id="L365">        shapesList.forEach(shape -&gt; shape.draw(g));</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (selectedShape != null) {</span>
+<span class="nc" id="L367">            commandList.add(commandMove);</span>
         }
 
-<span class="nc" id="L310">    }</span>
+<span class="nc" id="L370">    }</span>
 
     /**
      * Implements method for the &lt;tt&gt;MouseMotionListener&lt;/tt&gt; interface to
@@ -318,18 +378,18 @@ public class JDrawingFrame extends JFrame
     public void mouseDragged(MouseEvent evt) {
         // Implement the logic to handle mouse dragging events here
         // For example, you can add code to respond to dragging gestures.
-<span class="nc bnc" id="L321" title="All 4 branches missed.">        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) &amp;&amp; selectedShape != null) {</span>
-<span class="nc" id="L322">            int newX = evt.getX();</span>
-<span class="nc" id="L323">            int newY = evt.getY();</span>
+<span class="nc bnc" id="L381" title="All 4 branches missed.">        if ((((SelecteurActionListener) mSelecteurActionListener).isCursorSelected()) &amp;&amp; selectedShape != null) {</span>
+<span class="nc" id="L382">            int newX = evt.getX();</span>
+<span class="nc" id="L383">            int newY = evt.getY();</span>
 
-<span class="nc" id="L325">            ((CommandMove) commandMove).setLocation(newX, newY);</span>
-<span class="nc" id="L326">            commandMove.execute();</span>
+<span class="nc" id="L385">            ((CommandMove) commandMove).setLocation(newX, newY);</span>
+<span class="nc" id="L386">            commandMove.execute();</span>
 
-<span class="nc" id="L328">            startX = newX;</span>
-<span class="nc" id="L329">            startY = newY;</span>
+<span class="nc" id="L388">            startX = newX + 25;</span>
+<span class="nc" id="L389">            startY = newY + 25;</span>
         }
 
-<span class="nc" id="L332">    }</span>
+<span class="nc" id="L392">    }</span>
 
     /**
      * Implements an empty method for the &lt;tt&gt;MouseMotionListener&lt;/tt&gt;
@@ -338,12 +398,12 @@ public class JDrawingFrame extends JFrame
      * @param evt The associated mouse event.
      **/
     public void mouseMoved(MouseEvent evt) {
-<span class="nc" id="L341">        modifyLabel(evt);</span>
-<span class="nc" id="L342">    }</span>
+<span class="nc" id="L401">        modifyLabel(evt);</span>
+<span class="nc" id="L402">    }</span>
 
     private void modifyLabel(MouseEvent evt) {
-<span class="nc" id="L345">        mLabel.setText(&quot;(&quot; + evt.getX() + &quot;,&quot; + evt.getY() + &quot;)&quot;);</span>
-<span class="nc" id="L346">    }</span>
+<span class="nc" id="L405">        mLabel.setText(&quot;(&quot; + evt.getX() + &quot;,&quot; + evt.getY() + &quot;)&quot;);</span>
+<span class="nc" id="L406">    }</span>
 
     /**
      * Simple action listener for shape tool bar buttons that sets
@@ -351,103 +411,204 @@ public class JDrawingFrame extends JFrame
      * an action event
      **/
 
-<span class="fc" id="L354">    class ShapeActionListener implements ActionListener {</span>
+<span class="fc" id="L414">    class ShapeActionListener implements ActionListener {</span>
         public void actionPerformed(ActionEvent evt) {
-<span class="fc" id="L356">            ((SelecteurActionListener) mSelecteurActionListener).setIsCursedSelected(false);</span>
-<span class="fc" id="L357">            Logger msg = Logger.getLogger(&quot;Error&quot;);</span>
-<span class="pc bpc" id="L358" title="1 of 2 branches missed.">            if (evt.getActionCommand().equals(exportXML)) {</span>
-<span class="nc" id="L359">                File file = new File(&quot;export.xml&quot;);</span>
-<span class="nc" id="L360">                try (FileWriter fileWriter = new FileWriter(file);) {</span>
-<span class="nc" id="L361">                    String xmlShapes = exportShapesToXml();</span>
-<span class="nc" id="L362">                    fileWriter.write(xmlShapes);</span>
-<span class="nc" id="L363">                } catch (IOException | ParserConfigurationException e) {</span>
-<span class="nc" id="L364">                    msg.log(Level.WARNING, &quot;erreur dans l''export xml&quot;, e);</span>
-<span class="nc" id="L365">                }</span>
-<span class="pc bpc" id="L366" title="1 of 2 branches missed.">            } else if (evt.getActionCommand().equals(exportJSON)) {</span>
+<span class="fc" id="L416">            ((SelecteurActionListener) mSelecteurActionListener).setIsCursedSelected(false);</span>
+<span class="fc" id="L417">            Logger msg = Logger.getLogger(&quot;Error&quot;);</span>
+<span class="fc" id="L418">            Export exporter = new Export();</span>
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">            if (evt.getActionCommand().equals(exportXML)) {</span>
+                /*
+                 * File file = new File(&quot;export.xml&quot;);
+                 * try (FileWriter fileWriter = new FileWriter(file);) {
+                 * String xmlShapes = exportShapesToXml();
+                 * fileWriter.write(xmlShapes);
+                 * } catch (IOException | ParserConfigurationException e) {
+                 * msg.log(Level.WARNING, &quot;erreur dans l''export xml&quot;, e);
+                 * }
+                 * JOptionPane.showMessageDialog(null, &quot;Export Xml reussie !&quot;);
+                 */
+                String xmlShapes;
+                try {
+<span class="nc" id="L432">                    xmlShapes = exportShapesToXml();</span>
+<span class="nc" id="L433">                    exporter.actionPerformedExport(evt, xmlShapes);</span>
+<span class="nc" id="L434">                } catch (ParserConfigurationException e) {</span>
+<span class="nc" id="L435">                    msg.log(Level.WARNING, &quot;erreur dans l''export xml&quot;, e);</span>
+<span class="nc" id="L436">                }</span>
 
-<span class="nc" id="L368">                File file = new File(&quot;export.json&quot;);</span>
-<span class="nc" id="L369">                try (FileWriter fileWriter = new FileWriter(file);) {</span>
-<span class="nc" id="L370">                    String jsonShapes = exportShapesToJson();</span>
-<span class="nc" id="L371">                    fileWriter.write(jsonShapes);</span>
-<span class="nc" id="L372">                } catch (IOException e) {</span>
-<span class="nc" id="L373">                    msg.log(Level.WARNING, &quot;Erreur dans l''export JSON&quot;, e);</span>
-<span class="nc" id="L374">                }</span>
+<span class="pc bpc" id="L438" title="1 of 2 branches missed.">            } else if (evt.getActionCommand().equals(exportJSON)) {</span>
+
+                /*
+                 * File file = new File(&quot;export.json&quot;);
+                 * try (FileWriter fileWriter = new FileWriter(file);) {
+                 * String jsonShapes = exportShapesToJson();
+                 * fileWriter.write(jsonShapes);
+                 * } catch (IOException e) {
+                 * msg.log(Level.WARNING, &quot;Erreur dans l''export JSON&quot;, e);
+                 * }
+                 * JOptionPane.showMessageDialog(null, &quot;Export Json reussie !&quot;);
+                 */
+                String jsonShapes;
+                try {
+<span class="nc" id="L452">                    jsonShapes = exportShapesToJson();</span>
+<span class="nc" id="L453">                    exporter.actionPerformedExport(evt, jsonShapes);</span>
+<span class="nc" id="L454">                } catch (Exception e) {</span>
+<span class="nc" id="L455">                    msg.log(Level.WARNING, &quot;Erreur dans l''export JSON&quot;, e);</span>
+<span class="nc" id="L456">                }</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">            } else if (evt.getActionCommand().equals(importJson)) {</span>
+<span class="nc" id="L458">                Import importer = new Import();</span>
+                List&lt;ShapeObject&gt; shapesObjectList;
+<span class="nc" id="L460">                shapesObjectList = importer.actionPerformesImport(frame);</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">                for (ShapeObject shapeObj : shapesObjectList) {</span>
+<span class="nc" id="L462">                    createForme(shapeObj.getType(), shapeObj.getX(), shapeObj.getY());</span>
+<span class="nc" id="L463">                }</span>
+<span class="nc" id="L464">                mPanel.repaint();</span>
             }
             // ItÃ¨re sur tous les boutons
-<span class="fc" id="L377">            Iterator&lt;Shapes&gt; keys = mButtons.keySet().iterator();</span>
-<span class="fc bfc" id="L378" title="All 2 branches covered.">            while (keys.hasNext()) {</span>
-<span class="fc" id="L379">                Shapes shape = keys.next();</span>
-<span class="fc" id="L380">                JButton btn = mButtons.get(shape);</span>
-<span class="pc bpc" id="L381" title="1 of 2 branches missed.">                if (evt.getActionCommand().equals(shape.toString())) {</span>
-<span class="fc" id="L382">                    btn.setBorderPainted(true);</span>
-<span class="fc" id="L383">                    mSelected = shape;</span>
+<span class="fc" id="L467">            Iterator&lt;Shapes&gt; keys = mButtons.keySet().iterator();</span>
+<span class="fc bfc" id="L468" title="All 2 branches covered.">            while (keys.hasNext()) {</span>
+<span class="fc" id="L469">                Shapes shape = keys.next();</span>
+<span class="fc" id="L470">                JButton btn = mButtons.get(shape);</span>
+<span class="pc bpc" id="L471" title="1 of 2 branches missed.">                if (evt.getActionCommand().equals(shape.toString())) {</span>
+<span class="fc" id="L472">                    btn.setBorderPainted(true);</span>
+<span class="fc" id="L473">                    mSelected = shape;</span>
                 } else {
-<span class="nc" id="L385">                    btn.setBorderPainted(false);</span>
+<span class="nc" id="L475">                    btn.setBorderPainted(false);</span>
                 }
-<span class="fc" id="L387">                btn.repaint();</span>
-<span class="fc" id="L388">            }</span>
-<span class="fc" id="L389">        }</span>
+<span class="fc" id="L477">                btn.repaint();</span>
+<span class="fc" id="L478">            }</span>
+<span class="fc" id="L479">        }</span>
+
+        /*
+         * private void actionPerformesImport() {
+         * JFileChooser fileChooser = new JFileChooser();
+         * 
+         * int returnValue = fileChooser.showOpenDialog(JDrawingFrame.this);
+         * 
+         * if (returnValue == JFileChooser.APPROVE_OPTION) {
+         * File selectedFile = fileChooser.getSelectedFile();
+         * 
+         * String fileName = selectedFile.getName();
+         * if (fileName.endsWith(&quot;.json&quot;)) {
+         * JOptionPane.showMessageDialog(null, &quot;Fichier Jsosn selectionne : &quot; +
+         * selectedFile);
+         * Logger msg = Logger.getLogger(error);
+         * try (BufferedReader bufferedReader = new BufferedReader(new
+         * FileReader(selectedFile));) {
+         * StringBuilder content = new StringBuilder();
+         * String line;
+         * while ((line = bufferedReader.readLine()) != null) {
+         * content.append(line);
+         * }
+         * 
+         * JSONParser parser = new JSONParser();
+         * Object obj = parser.parse(content.toString());
+         * JSONObject jsonObject = (JSONObject) obj;
+         * 
+         * JSONArray shapesArray = (JSONArray) jsonObject.get(&quot;shapes&quot;);
+         * 
+         * for (Object shapeObj : shapesArray) {
+         * JSONObject shapeJson = (JSONObject) shapeObj;
+         * String type = (String) shapeJson.get(&quot;type&quot;);
+         * Long x = (Long) shapeJson.get(&quot;x&quot;);
+         * Long y = (Long) shapeJson.get(&quot;y&quot;);
+         * 
+         * createForme(type, x, y);
+         * 
+         * }
+         * mPanel.repaint();
+         * } catch (Exception e) {
+         * msg.log(Level.WARNING, &quot;Erreur dans l''import JSON&quot;, e);
+         * }
+         * 
+         * } else {
+         * JOptionPane.showMessageDialog(null, &quot;Type de fichier non pris en charge&quot;);
+         * }
+         * } else {
+         * JOptionPane.showMessageDialog(null, &quot;Aucun fichier selectione&quot;);
+         * }
+         * }
+         */
+
+        private void createForme(String type, Long x, Long y) {
+<span class="nc bnc" id="L533" title="All 2 branches missed.">            if (type.equals(&quot;circle&quot;)) {</span>
+<span class="nc" id="L534">                Circle circle = new Circle(x.intValue() + 25, y.intValue() + 25);</span>
+<span class="nc" id="L535">                shapesList.add(circle);</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">            } else if (type.equals(&quot;triangle&quot;)) {</span>
+<span class="nc" id="L537">                Triangle triangle = new Triangle(x.intValue() + 25, y.intValue() + 25);</span>
+<span class="nc" id="L538">                shapesList.add(triangle);</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">            } else if (type.equals(&quot;square&quot;)) {</span>
+<span class="nc" id="L540">                Square square = new Square(x.intValue() + 25, y.intValue() + 25);</span>
+<span class="nc" id="L541">                shapesList.add(square);</span>
+            }
+<span class="nc" id="L543">        }</span>
 
         private String exportShapesToJson() {
-<span class="nc" id="L392">            JSonVisitor jSonVisitor = new JSonVisitor();</span>
-<span class="nc" id="L393">            StringBuilder jsonResult = new StringBuilder();</span>
-<span class="nc" id="L394">            jsonResult.append(&quot;{\n\&quot;shapes\&quot;:[\n&quot;);</span>
-<span class="nc bnc" id="L395" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
-<span class="nc" id="L396">                ((Visitable) shape).accept(jSonVisitor);</span>
+<span class="nc" id="L546">            JSonVisitor jSonVisitor = new JSonVisitor();</span>
+<span class="nc" id="L547">            StringBuilder jsonResult = new StringBuilder();</span>
+<span class="nc" id="L548">            jsonResult.append(&quot;{\n\&quot;shapes\&quot;:[\n&quot;);</span>
+<span class="nc" id="L549">            int index = 0;</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
+<span class="nc" id="L551">                ((Visitable) shape).accept(jSonVisitor);</span>
 
-<span class="nc" id="L398">                jsonResult.append(jSonVisitor.getRepresentation()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L399">                jSonVisitor.reset();</span>
-<span class="nc" id="L400">            }</span>
-<span class="nc" id="L401">            jsonResult.append(&quot;]\n}&quot;);</span>
-<span class="nc" id="L402">            return jsonResult.toString();</span>
+<span class="nc" id="L553">                jsonResult.append(jSonVisitor.getRepresentation());</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">                if (index != shapesList.size() - 1) {</span>
+<span class="nc" id="L555">                    jsonResult.append(&quot;,&quot;).append(&quot;\n&quot;);</span>
+                } else {
+<span class="nc" id="L557">                    jsonResult.append(&quot;\n&quot;);</span>
+                }
+<span class="nc" id="L559">                jSonVisitor.reset();</span>
+<span class="nc" id="L560">                index++;</span>
+<span class="nc" id="L561">            }</span>
+<span class="nc" id="L562">            jsonResult.append(&quot;]\n}&quot;);</span>
+<span class="nc" id="L563">            return jsonResult.toString();</span>
         }
 
         private String exportShapesToXml() throws ParserConfigurationException {
-<span class="nc" id="L406">            XMLVisitor xmlVisitor = new XMLVisitor();</span>
-<span class="nc" id="L407">            StringBuilder xmlResult = new StringBuilder();</span>
-<span class="nc" id="L408">            xmlResult.append(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;);</span>
-<span class="nc" id="L409">            xmlResult.append(&quot;&lt;root&gt;\n&lt;shapes&gt;\n&quot;);</span>
-<span class="nc bnc" id="L410" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
-<span class="nc" id="L411">                ((Visitable) shape).accept(xmlVisitor);</span>
-<span class="nc" id="L412">                xmlResult.append(xmlVisitor.getRepresentation()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L413">                xmlVisitor.reset();</span>
-<span class="nc" id="L414">            }</span>
-<span class="nc" id="L415">            xmlResult.append(&quot;&lt;/shapes&gt;\n&lt;/root&gt;&quot;);</span>
-<span class="nc" id="L416">            return xmlResult.toString();</span>
+<span class="nc" id="L567">            XMLVisitor xmlVisitor = new XMLVisitor();</span>
+<span class="nc" id="L568">            StringBuilder xmlResult = new StringBuilder();</span>
+<span class="nc" id="L569">            xmlResult.append(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;);</span>
+<span class="nc" id="L570">            xmlResult.append(&quot;&lt;root&gt;\n&lt;shapes&gt;\n&quot;);</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
+<span class="nc" id="L572">                ((Visitable) shape).accept(xmlVisitor);</span>
+<span class="nc" id="L573">                xmlResult.append(xmlVisitor.getRepresentation()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L574">                xmlVisitor.reset();</span>
+<span class="nc" id="L575">            }</span>
+<span class="nc" id="L576">            xmlResult.append(&quot;&lt;/shapes&gt;\n&lt;/root&gt;&quot;);</span>
+<span class="nc" id="L577">            return xmlResult.toString();</span>
         }
     }
 
-<span class="fc" id="L420">    class DrawingPanel extends JPanel {</span>
+<span class="fc" id="L581">    class DrawingPanel extends JPanel {</span>
         @Override
         protected void paintComponent(Graphics g) {
-<span class="nc" id="L423">            super.paintComponent(g);</span>
-<span class="nc bnc" id="L424" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
-<span class="nc bnc" id="L425" title="All 2 branches missed.">                if (shape instanceof SimpleShape) {</span>
-<span class="nc" id="L426">                    shape.draw((Graphics2D) g);</span>
+<span class="nc" id="L584">            super.paintComponent(g);</span>
+<span class="nc bnc" id="L585" title="All 2 branches missed.">            for (SimpleShape shape : shapesList) {</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">                if (shape instanceof SimpleShape) {</span>
+<span class="nc" id="L587">                    shape.draw((Graphics2D) g);</span>
                 }
-<span class="nc" id="L428">            }</span>
-<span class="nc" id="L429">        }</span>
+<span class="nc" id="L589">            }</span>
+<span class="nc" id="L590">        }</span>
     }
 
-<span class="fc" id="L432">    class SelecteurActionListener implements ActionListener {</span>
-<span class="fc" id="L433">        private boolean isCursorSelected = false;</span>
+<span class="fc" id="L593">    class SelecteurActionListener implements ActionListener {</span>
+<span class="fc" id="L594">        private boolean isCursorSelected = false;</span>
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
-<span class="nc bnc" id="L437" title="All 2 branches missed.">            if (arg0.getActionCommand().equals(&quot;curseur&quot;)) {</span>
-<span class="nc" id="L438">                isCursorSelected = true;</span>
+<span class="nc bnc" id="L598" title="All 2 branches missed.">            if (arg0.getActionCommand().equals(&quot;curseur&quot;)) {</span>
+<span class="nc" id="L599">                isCursorSelected = true;</span>
             } else {
-<span class="nc" id="L440">                isCursorSelected = false;</span>
+<span class="nc" id="L601">                isCursorSelected = false;</span>
             }
-<span class="nc" id="L442">        }</span>
+<span class="nc" id="L603">        }</span>
 
         public boolean isCursorSelected() {
-<span class="nc" id="L445">            return isCursorSelected;</span>
+<span class="nc" id="L606">            return isCursorSelected;</span>
         }
 
         public void setIsCursedSelected(boolean selected) {
-<span class="fc" id="L449">            this.isCursorSelected = selected;</span>
-<span class="fc" id="L450">        }</span>
+<span class="fc" id="L610">            this.isCursorSelected = selected;</span>
+<span class="fc" id="L611">        }</span>
     }
 
 }
