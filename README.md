@@ -27,3 +27,4 @@ Puis il faut que vous lancez la fichier ```App.java```
 ### Importation des fichers JSON
 Vous pouvez cliquer sur le bouton "importer fichier" et ensuite sélectionner parmi vos fichiers au format .JSON. Ensuite, vous pourrez importer le contenu du fichier et effectuer des opérations sur les formes graphiques.
 ## Document de conception
+Veuillez voir dans le fichier ```documentDeConception.pdf```.
